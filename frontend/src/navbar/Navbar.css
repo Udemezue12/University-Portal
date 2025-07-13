@@ -1,0 +1,27 @@
+.university-navbar {
+  background-color: #6887c977;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-logo {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+.university-navbar .nav-item {
+  margin-left: 1rem;
+  font-weight: 500;
+  color: #ffffff !important;
+  transition: color 0.3s;
+}
+
+.university-navbar .nav-item:hover {
+  color: #ffcc00 !important;
+}
+.disabled-link {
+  cursor: not-allowed;
+  pointer-events: none;
+}

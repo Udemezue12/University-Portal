@@ -1,0 +1,48 @@
+.home-page {
+  height: 100vh;
+  background: url('https://images.unsplash.com/photo-1581093588401-050f8b4ad88f?auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+  animation: backgroundTransition 15s infinite alternate ease-in-out;
+  position: relative;
+  overflow-y: auto;
+  padding-bottom: 5rem;
+}
+
+@keyframes backgroundTransition {
+  0% {
+    background-image: url('https://images.unsplash.com/photo-1581093588401-050f8b4ad88f?auto=format&fit=crop&w=1950&q=80');
+  }
+  100% {
+    background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1950&q=80');
+  }
+}
+
+.overlay {
+  background: rgba(0, 0, 0, 0.6);
+  min-height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.custom-card {
+  border-radius: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+}
+
+.history-section {
+  max-width: 1000px;
+  margin: 0 auto;
+}

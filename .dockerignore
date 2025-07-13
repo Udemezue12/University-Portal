@@ -1,0 +1,35 @@
+# Node & Python environment junk
+node_modules/
+frontend/node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Build & dist folders
+*.egg-info/
+dist/
+build/
+frontend/build/
+
+# Env files
+.env
+.env.*
+
+# OS system files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.bak
+*.swp
+*.tmp
+*.coverage
+
+# Virtual environments
+venv/
+env/
+crm-env/

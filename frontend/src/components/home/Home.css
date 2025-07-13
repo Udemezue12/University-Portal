@@ -1,0 +1,78 @@
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  
+  width: 100%;
+  font-family: 'Segoe UI', 'Roboto', 'Georgia', serif;
+  background-color: #122231ff;
+}
+
+.home-page {
+  overflow-x: hidden;
+
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(to right, #003366, #004080);
+  color: white;
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.university-logo {
+  max-width: 80px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Portal section */
+.portal-section .row,
+.news-section .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.portal-card {
+  overflow-x: hidden;
+  
+}
+
+/* Mission section */
+.mission-section {
+  background-color: #eef2f5;
+}
+
+/* Noticeboard */
+.notice-banner {
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  background: #ffecb3;
+}
+
+/* News cards */
+.news-section h3 {
+  font-family: 'Georgia', serif;
+}
+
+.card-img-top {
+  object-fit: cover;
+  height: 200px;
+  width: 100%;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+/* Footer */
+.footer {
+  background-color: #222;
+  font-size: 0.9rem;
+}
