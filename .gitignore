@@ -9,7 +9,7 @@ payroll-env/
 ENV/
 env.bak/
 *.env
-
+crm-env
 # Django static/media
 staticfiles/
 
