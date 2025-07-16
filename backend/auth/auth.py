@@ -84,19 +84,9 @@ class Auth:
             value=token,
             httponly=True,
             samesite="Lax",
-            secure=False,
+            secure=True,
             max_age=60 * 60 * 24
         )
         return response
 
-    # @auth_router.post('/logout')
-    # async def logout(self, request: Request, response: Response):
-    #     request.session.clear()
-    #     res = JSONResponse({"message": "Logged out"})
 
-    #     res.delete_cookie(key="sessionid", path="/")
-    #     res.delete_cookie(key="session", path="/")
-    #     res.delete_cookie(key="csrftoken", path="/")
-    #     res.delete_cookie(key="access_token", path="/")
-
-    #     return res

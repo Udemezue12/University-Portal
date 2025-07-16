@@ -181,7 +181,7 @@ class PasskeyLoginRouter:
                 value=token,
                 httponly=True,
                 samesite="Lax",
-                secure=False,
+                secure=True,
                 max_age=60 * 60 * 24
             )
 
