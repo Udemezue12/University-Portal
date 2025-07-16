@@ -4,7 +4,7 @@ import { validateRegisterForm } from "../constants/validators";
 import { useNavigate } from "react-router-dom";
 import { fetchFastCsrfToken } from "../constants/fetchCsrfToken";
 import ButtonComponent from "../common/ButtonComponent";
-import { API_URL } from './../api_route/api';
+import { API_URL } from "./../api_route/api";
 
 export default function LecturerRegister() {
   const [form, setForm] = useState({
@@ -59,17 +59,17 @@ export default function LecturerRegister() {
       console.error("Registration Failed:", error);
 
       if (response) {
-        if (response.msg === "Username already exists") {
+        if (response.detail === "Username already exists") {
           setError("Username already taken.");
-        } else if (response.msg === "Email already exists") {
+        } else if (response.detail === "Email already exists") {
           setError("Email already in use.");
-        } else if (response.msg === "Name already exists") {
+        } else if (response.detail === "Name already exists") {
           setError("Name already in use.");
         } else if (response.errors) {
           setError(`Validation failed: ${JSON.stringify(response.errors)}`);
         } else {
           setError(
-            response.msg || "Registration failed. Please check your inputs."
+            response.detail || "Registration failed. Please check your inputs."
           );
         }
       } else {

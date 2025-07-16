@@ -5,6 +5,8 @@ from webauthn.helpers.structs import (
 from webauthn import (
     generate_authentication_options,
 )
+from base64 import b64decode
+from constants import passkey_get_current_user
 from typing import List
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, HTTPException, Depends
@@ -19,11 +21,10 @@ from fastapi_utils.cbv import cbv
 from sqlalchemy.orm import Session
 from base_code import base64url_encode
 from jose import jwt
-from env_const import RP_ID, ORIGIN, jwt_expiration, SECRET_KEY, ALGORITHM
+from env_const import RP_ID, jwt_expiration, SECRET_KEY, ALGORITHM
 
 
 passkey_router = APIRouter()
-
 
 
 @cbv(passkey_router)
@@ -31,11 +32,13 @@ class PasskeyRegisterRouter:
     user_id: int = Depends(passkey_jwt_protect)
     db: AsyncSession = Depends(get_db_async)
     validate_csrf: None = Depends(validate_csrf_dependency)
+    
 
     @passkey_router.get('/passkey/devices')
     async def get_registered_passkey(self):
         result = await self.db.execute(
-            select(PasskeyCredential).where(PasskeyCredential.user_id == self.user_id)
+            select(PasskeyCredential).where(
+                PasskeyCredential.user_id == self.user_id)
         )
         credentials = result.scalars().all()
 
@@ -47,23 +50,42 @@ class PasskeyRegisterRouter:
         ]
 
     @passkey_router.post("/register/passkey")
-    async def register_passkey(self, data: CredentialAttestation):
+    async def register_passkey(self, data: CredentialAttestation, current_user = Depends(passkey_get_current_user)):
         db = self.db
+       
+        try:
+            public_key_bytes = b64decode(data.public_key)
+        except Exception:
+            raise HTTPException(
+                status_code=400, detail="Invalid public key format")
 
-        result = await db.execute(
-            select(PasskeyCredential).where(
-                (PasskeyCredential.user_id == self.user_id) &
-                (PasskeyCredential.credential_id == data.credential_id) &
-                (PasskeyCredential.public_key == data.public_key) &
-                (PasskeyCredential.device_fingerprint == data.device_fingerprint)
-            )
-        )
-        existing_cred = result.scalars().first()
-
-        if existing_cred:
+        result = await db.execute(select(PasskeyCredential).where((PasskeyCredential.user_id == current_user.id) & (PasskeyCredential.credential_id == data.credential_id)))
+        if result.scalars().first():
             raise HTTPException(
                 status_code=400,
-                detail="These details have already been registered."
+                detail="This credential ID is already registered for this user."
+            )
+        result = await db.execute(
+            select(PasskeyCredential).where(
+                (PasskeyCredential.user_id == current_user.id) &
+                (PasskeyCredential.public_key == public_key_bytes)
+            )
+        )
+        if result.scalars().first():
+            raise HTTPException(
+                status_code=400,
+                detail="This public key is already registered for this user."
+            )
+        result = await db.execute(
+            select(PasskeyCredential).where(
+                (PasskeyCredential.device_fingerprint == data.device_fingerprint) &
+                (PasskeyCredential.user_id != current_user.id)
+            )
+        )
+        if result.scalars().first():
+            raise HTTPException(
+                status_code=400,
+                detail="This fingerprint is already registered with another account."
             )
 
         new_cred = PasskeyCredential(
@@ -85,6 +107,7 @@ class PasskeyRegisterRouter:
             )
 
         return {"message": "Passkey registered successfully"}
+
 
 @cbv(passkey_router)
 class PasskeyLoginRouter:
@@ -193,4 +216,3 @@ class PasskeyLoginRouter:
             raise HTTPException(
                 status_code=500, detail=f"Unexpected error: {str(e)}"
             )
-

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
-import {validateRegisterForm} from "../constants/validators"
+import { validateRegisterForm } from "../constants/validators";
 import { useNavigate } from "react-router-dom";
 import { fetchFastCsrfToken } from "../constants/fetchCsrfToken";
-import ButtonComponent from "../common/ButtonComponent"; 
+import ButtonComponent from "../common/ButtonComponent";
 import { API_URL } from "../api_route/api";
 
 export default function AdminRegister() {
@@ -59,16 +59,18 @@ export default function AdminRegister() {
       console.error("Registration Failed:", error);
 
       if (response) {
-        if (response.msg === "Username already exists") {
+        if (response.detail === "Username already exists") {
           setError("Username already taken.");
-        } else if (response.msg === "Email already exists") {
+        } else if (response.detail === "Email already exists") {
           setError("Email already in use.");
-        } else if (response.msg === "Name already exists") {
+        } else if (response.detail === "Name already exists") {
           setError("Name already in use.");
         } else if (response.errors) {
           setError(`Validation failed: ${JSON.stringify(response.errors)}`);
         } else {
-          setError(response.msg || "Registration failed. Please check your inputs.");
+          setError(
+            response.detail || "Registration failed. Please check your inputs."
+          );
         }
       } else {
         setError("Something went wrong. Please try again.");
@@ -78,10 +80,15 @@ export default function AdminRegister() {
 
   return (
     <div className="container d-flex justify-content-center align-items-center min-vh-100">
-      <div className="card shadow p-4 rounded-4 w-100" style={{ maxWidth: "400px" }}>
+      <div
+        className="card shadow p-4 rounded-4 w-100"
+        style={{ maxWidth: "400px" }}
+      >
         <h4 className="text-center mb-3">Register</h4>
 
-        {message && <div className="alert alert-info text-center">{message}</div>}
+        {message && (
+          <div className="alert alert-info text-center">{message}</div>
+        )}
         {error && <div className="alert alert-danger text-center">{error}</div>}
 
         <form>
@@ -170,7 +177,6 @@ export default function AdminRegister() {
             </div>
           </div>
 
-          
           <ButtonComponent
             type="button"
             variant="primary"
@@ -182,7 +188,9 @@ export default function AdminRegister() {
 
           <p className="mt-3 text-center">
             Already have an account?{" "}
-            <a href="/login" className="text-decoration-none">Login</a>
+            <a href="/login" className="text-decoration-none">
+              Login
+            </a>
           </p>
         </form>
       </div>

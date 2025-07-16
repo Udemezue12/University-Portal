@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Box, Typography, Button } from "@mui/material";
@@ -15,7 +14,6 @@ const RegisterFingerprint = () => {
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
   const userId = localStorage.getItem("userId");
- 
 
   useEffect(() => {
     const loadFingerprintAndCheck = async () => {
@@ -81,8 +79,7 @@ const RegisterFingerprint = () => {
         String.fromCharCode(...new Uint8Array(attestationObject))
       );
 
-      
-       axios.post(
+      await axios.post(
         `${API_URL}/register/passkey`,
         {
           credential_id: credentialId,
@@ -97,25 +94,27 @@ const RegisterFingerprint = () => {
         }
       );
 
-      
       alert("Passkey created successfully!");
       window.location.reload();
     } catch (error) {
       console.error("Error creating Passkey:", error);
+
       if (
         error.message === "Failed to fetch CSRF token" ||
         error.message === "Invalid response from CSRF endpoint"
       ) {
         alert("Failed to fetch CSRF token. Please refresh and try again.");
-      } else if (error.response && error.response.status === 403) {
-        alert("CSRF token error. Please refresh and try again.");
-      } else if (
-        error.response &&
-        error.response.status === 400 &&
-        error.response.data
-      ) {
-        const messages = Object.values(error.response.data).flat().join(" ");
-        alert(`Error: ${messages}`);
+      } else if (error.response) {
+        const { status, data } = error.response;
+
+        if (status === 400 && data.detail) {
+        
+          alert(`Error: ${data.detail}`);
+        } else if (status === 403) {
+          alert("CSRF token error. Please refresh and try again.");
+        } else {
+          alert("Unexpected error occurred. Please try again.");
+        }
       } else {
         alert("Passkey creation failed. Please try again.");
       }

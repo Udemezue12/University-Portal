@@ -16,7 +16,8 @@ class Auth:
         session_db = self.db
         key, value = list(kwargs.items())[0]
         result = await session_db.execute(select(User).where(getattr(User, key) == value))
-        return result
+        user = result.scalars().first()
+        return user is not None
 
     async def _get_department_name(self, user: User):
         session = self.db

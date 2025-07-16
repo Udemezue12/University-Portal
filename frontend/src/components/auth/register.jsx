@@ -52,17 +52,17 @@ export default function FastRegister() {
       console.error("Response Data:", response);
 
       if (response) {
-        if (response.msg === "Username already exists") {
+        if (response.detail === "Username already exists") {
           setError("Username already taken.");
-        } else if (response.msg === "Email already exists") {
+        } else if (response.detail === "Email already exists") {
           setError("Email already in use.");
-        } else if (response.msg === "Name already exists") {
+        } else if (response.detail === "Name already exists") {
           setError("Name already in use.");
         } else if (response.errors) {
           setError(`Validation failed: ${JSON.stringify(response.errors)}`);
         } else {
           setError(
-            response.msg || "Registration failed. Please check your inputs."
+            response.detail || "Registration failed. Please check your inputs."
           );
         }
       } else {

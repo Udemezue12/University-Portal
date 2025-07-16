@@ -47,17 +47,20 @@ class UserProfile(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+
 class UserRegisterInput(BaseModel):
     username: str
     email: EmailStr
     password: str
     name: str
-    role: Role
+    role: str
 
 
 class UserLoginInput(BaseModel):
     username: str
     password: str
+
+
 class UserResponse(BaseModel):
     id: int
     email: str
@@ -625,12 +628,14 @@ class StudentResponse(BaseModel):
     class Config:
         form_atrributes = True
 
+
 class StudentOut(BaseModel):
     id: int
     name: str
 
     class Config:
         from_attributes = True
+
 
 class StudentAddResultOut(BaseModel):
     id: int
@@ -645,6 +650,7 @@ class StudentAddResultOut(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class StudentResultSubmissionSchema(BaseModel):
     student_id: int
