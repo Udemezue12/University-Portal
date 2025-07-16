@@ -23,8 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend files including alembic
 COPY backend/ ./backend
-COPY alembic.ini ./
-COPY alembic ./alembic
+COPY backend/alembic.ini ./alembic.ini
+COPY backend/alembic ./alembic
+
 
 # Copy built frontend into backend to serve with FastAPI
 COPY --from=frontend-builder /app/frontend/build ./frontend/build
