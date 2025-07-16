@@ -25,5 +25,5 @@ services:
     command: sh -c "npm run build"
     volumes:
       - ./frontend:/app/frontend
-    env_file:
-      - .env
+    # env_file:
+    #   - .env

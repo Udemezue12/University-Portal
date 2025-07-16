@@ -28,7 +28,7 @@ COPY backend/ ./backend
 COPY --from=frontend-builder /app/frontend/build ./frontend/build
 
 # Copy environment variables
-COPY .env .
+# COPY .env .
 
 EXPOSE 8000
 
