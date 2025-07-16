@@ -32,7 +32,7 @@ export default function AssignLecturerToLevelsBySession() {
           headers: { "X-CSRF-TOKEN": csrf_token },
           withCredentials: true,
         }),
-        axios.get(`${API_URL}/sessions`, {
+        axios.get(`${API_URL}/school/`, {
           headers: { "X-CSRF-TOKEN": csrf_token },
           withCredentials: true,
         }),
@@ -76,7 +76,6 @@ export default function AssignLecturerToLevelsBySession() {
 
     const uniqueDepartmentIds = [...new Set(selectedDepartments)];
 
-    
     const departmentId = uniqueDepartmentIds[0];
 
     try {
@@ -99,15 +98,15 @@ export default function AssignLecturerToLevelsBySession() {
       setMessage("Lecturer successfully assigned to levels and department.");
     } catch (err) {
       console.error(err);
-      setMessage(
-        err.response?.data?.detail || "Failed to assign lecturer."
-      );
+      setMessage(err.response?.data?.detail || "Failed to assign lecturer.");
     }
   };
 
   return (
     <div className="container mt-4">
-      <h4 className="mb-3 fw-bold text-success">Assign Lecturer to Levels (Per Session)</h4>
+      <h4 className="mb-3 fw-bold text-success">
+        Assign Lecturer to Levels (Per Session)
+      </h4>
       {message && <div className="alert alert-info">{message}</div>}
 
       <div className="mb-4">
@@ -131,7 +130,7 @@ export default function AssignLecturerToLevelsBySession() {
           <tr>
             <th>Lecturer</th>
             <th>Email</th>
-            <th>Select Levels (Auto-assigns department)</th>
+            <th>Select Levels</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -142,16 +141,18 @@ export default function AssignLecturerToLevelsBySession() {
               <td>{lecturer.email}</td>
               <td>
                 {levels.map((level) => {
-                  const dept = departments.find((d) => d.id === level.department_id);
+                  const dept = departments.find(
+                    (d) => d.id === level.department_id
+                  );
                   return (
                     <div key={level.id} className="form-check">
                       <input
                         type="checkbox"
                         className="form-check-input"
                         id={`lvl-${lecturer.id}-${level.id}`}
-                        checked={
-                          (selectedLevels[lecturer.id] || []).includes(level.id)
-                        }
+                        checked={(selectedLevels[lecturer.id] || []).includes(
+                          level.id
+                        )}
                         onChange={() => toggleLevel(lecturer.id, level.id)}
                       />
                       <label
@@ -169,7 +170,9 @@ export default function AssignLecturerToLevelsBySession() {
                   label="Assign"
                   onClick={() => assignLevels(lecturer.id)}
                   className="btn btn-success btn-sm"
-                >Assign</ButtonComponent>
+                >
+                  Assign
+                </ButtonComponent>
               </td>
             </tr>
           ))}

@@ -1,4 +1,5 @@
-// src/components/lecturer/GradeAssignment.jsx
+// frontend/src/components/lecturer/GradeAssignment.jsx
+
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -20,19 +21,15 @@ export default function GradeAssignment() {
   const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
 
-  const handleGradeSubmit = async () => {
-    const submission_id = Number(submissionId);
+  const handleSubmit = async () => {
     const parsedScore = Number(score);
-    console.log("submissionId:", submissionId);
-    console.log("score:", score);
-
     if (
-      !submission_id ||
+      !submissionId ||
       isNaN(parsedScore) ||
       parsedScore < 0 ||
       parsedScore > 30
     ) {
-      setToastMsg("Please enter a valid score between 0 and 300.");
+      setToastMsg("Score must be between 0 and 30.");
       setShowToast(true);
       return;
     }
@@ -43,7 +40,7 @@ export default function GradeAssignment() {
       await axios.post(
         `${API_URL}/assignments/grade`,
         {
-          submission_id,
+          submission_id: Number(submissionId),
           score: parsedScore,
           feedback,
         },
@@ -57,12 +54,11 @@ export default function GradeAssignment() {
       setShowToast(true);
       setTimeout(() => navigate("/graded/assignments"), 2000);
     } catch (err) {
-      const errors = err.response?.data?.detail;
-      if (Array.isArray(errors)) {
-        const messages = errors.map((e) => e.msg).join(", ");
-        setToastMsg(messages);
+      const error = err.response?.data?.detail;
+      if (Array.isArray(error)) {
+        setToastMsg(error.map(e => e.msg).join(", "));
       } else {
-        setToastMsg(err.response?.data?.detail || "Grading failed.");
+        setToastMsg(error || "Grading failed.");
       }
       setShowToast(true);
     }
@@ -70,47 +66,45 @@ export default function GradeAssignment() {
 
   return (
     <Container className="mt-5">
-      <h4 className="text-primary fw-bold text-center">Grade Assignment</h4>
+      <h4 className="text-center text-primary fw-bold">Grade Assignment</h4>
       <Form className="mt-4">
         <Form.Group>
-          <Form.Label>Score (%)</Form.Label>
+          <Form.Label>Score (out of 30)</Form.Label>
           <Form.Control
             type="number"
+            value={score}
+            placeholder="Enter score"
+            onChange={(e) => setScore(e.target.value)}
             min={0}
             max={30}
-            value={score}
-            onChange={(e) => setScore(e.target.value)}
           />
         </Form.Group>
+
         <Form.Group className="mt-3">
-          <Form.Label>Feedback (optional)</Form.Label>
+          <Form.Label>Feedback</Form.Label>
           <Form.Control
             as="textarea"
             rows={4}
             value={feedback}
+            placeholder="Optional feedback"
             onChange={(e) => setFeedback(e.target.value)}
           />
         </Form.Group>
-        <Button
-          className="mt-4"
-          onClick={handleGradeSubmit}
-          disabled={
-            !score || isNaN(parseFloat(score)) || parseFloat(score) <= 0
-          }
-        >
+
+        <Button className="mt-4" onClick={handleSubmit}>
           Submit Grade
         </Button>
       </Form>
 
       <ToastContainer position="top-center">
         <Toast
+          bg="success"
           show={showToast}
           onClose={() => setShowToast(false)}
           delay={3000}
           autohide
-          bg="success"
         >
-          <Toast.Body className="text-white text-center fw-semibold">
+          <Toast.Body className="text-white text-center">
             {toastMsg}
           </Toast.Body>
         </Toast>

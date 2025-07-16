@@ -47,6 +47,11 @@ export default function CreateCourse() {
       setMessage("Error loading levels.");
     }
   };
+  useEffect(() => {
+    if (levels.length > 0) {
+      
+    }
+  }, [levels]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -57,7 +62,10 @@ export default function CreateCourse() {
 
     if (name === "department_id") {
       setFormData((prev) => ({ ...prev, level_id: "" }));
-      fetchLevels(value);
+      if (name === "department_id") {
+        setFormData((prev) => ({ ...prev, level_id: "" }));
+        fetchLevels(parseInt(value));
+      }
     }
   };
 

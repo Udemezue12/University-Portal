@@ -5,36 +5,40 @@ from webauthn.helpers.structs import (
 from webauthn import (
     generate_authentication_options,
 )
+from typing import List
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, HTTPException,Depends
-from model import PasskeyCredential, User
+from fastapi import APIRouter, HTTPException, Depends
+from model import PasskeyCredential, User, Department, StudentDepartment, LecturerDepartmentAndLevel
 from schema import CredentialAttestation, VerifyLoginRequest
 from validators import passkey_jwt_protect, validate_csrf_dependency
 import traceback
-from constants import get_db
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import get_db, get_db_async
 from fastapi_utils.cbv import cbv
 from sqlalchemy.orm import Session
 from base_code import base64url_encode
 from jose import jwt
-from env_const import RP_ID,ORIGIN, jwt_expiration, SECRET_KEY, ALGORITHM
-
+from env_const import RP_ID, ORIGIN, jwt_expiration, SECRET_KEY, ALGORITHM
 
 
 passkey_router = APIRouter()
 
 
+
 @cbv(passkey_router)
 class PasskeyRegisterRouter:
     user_id: int = Depends(passkey_jwt_protect)
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db_async)
     validate_csrf: None = Depends(validate_csrf_dependency)
 
     @passkey_router.get('/passkey/devices')
-    def get_registered_passkey(self):
-        user_id = self.user_id
-        db = self.db
-        credentials = db.query(PasskeyCredential).filter_by(
-            user_id=user_id).all()
+    async def get_registered_passkey(self):
+        result = await self.db.execute(
+            select(PasskeyCredential).where(PasskeyCredential.user_id == self.user_id)
+        )
+        credentials = result.scalars().all()
+
         return [
             {
                 'device_fingerprint': cred.device_fingerprint
@@ -43,17 +47,18 @@ class PasskeyRegisterRouter:
         ]
 
     @passkey_router.post("/register/passkey")
-    def register_passkey(self, data: CredentialAttestation):
-        credential_id = data.credential_id
-        public_key = data.public_key
-        device_fingerprint = data.device_fingerprint
+    async def register_passkey(self, data: CredentialAttestation):
+        db = self.db
 
-        existing_cred = self.db.query(PasskeyCredential).filter_by(
-            user_id=self.user_id,
-            credential_id=credential_id,
-            public_key=public_key,
-            device_fingerprint=device_fingerprint
-        ).first()
+        result = await db.execute(
+            select(PasskeyCredential).where(
+                (PasskeyCredential.user_id == self.user_id) &
+                (PasskeyCredential.credential_id == data.credential_id) &
+                (PasskeyCredential.public_key == data.public_key) &
+                (PasskeyCredential.device_fingerprint == data.device_fingerprint)
+            )
+        )
+        existing_cred = result.scalars().first()
 
         if existing_cred:
             raise HTTPException(
@@ -62,18 +67,18 @@ class PasskeyRegisterRouter:
             )
 
         new_cred = PasskeyCredential(
-            credential_id=credential_id,
-            public_key=public_key,
+            credential_id=data.credential_id,
+            public_key=data.public_key,
             user_id=self.user_id,
-            device_fingerprint=device_fingerprint
+            device_fingerprint=data.device_fingerprint
         )
 
-        self.db.add(new_cred)
+        db.add(new_cred)
 
         try:
-            self.db.commit()
+            await db.commit()
         except Exception as e:
-            self.db.rollback()
+            await db.rollback()
             raise HTTPException(
                 status_code=500,
                 detail=f"Database error: {str(e)}"
@@ -81,19 +86,22 @@ class PasskeyRegisterRouter:
 
         return {"message": "Passkey registered successfully"}
 
-
 @cbv(passkey_router)
 class PasskeyLoginRouter:
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db_async)
 
     @passkey_router.get('/verify/login')
-    def passkey_verify_login(self):
+    async def passkey_verify_login(self):
         db = self.db
-        
-        credentials = db.query(PasskeyCredential).filter_by().all()
+
+        result = await db.execute(select(PasskeyCredential))
+        credentials: List[PasskeyCredential] = result.scalars().all()
+
         if not credentials:
             raise HTTPException(
-                status_code=404, detail="No passkeys registered")
+                status_code=404, detail="No passkeys registered"
+            )
+
         allow_credentials = [
             {
                 'id': credential.credential_id,
@@ -101,13 +109,14 @@ class PasskeyLoginRouter:
             }
             for credential in credentials
         ]
+
         options = generate_authentication_options(
             rp_id=RP_ID,
             allow_credentials=allow_credentials,
             timeout=60000,
             user_verification=UserVerificationRequirement.REQUIRED
         )
-        
+
         public_key_options = {
             'challenge': base64url_encode(options.challenge),
             'rpId': options.rp_id,
@@ -118,22 +127,40 @@ class PasskeyLoginRouter:
 
         return JSONResponse({'publicKey': public_key_options})
 
-   
     @passkey_router.post("/passkey/authenticate")
-    def passkey_authenticate(self, data: VerifyLoginRequest):
-        db= self.db
+    async def passkey_authenticate(self, data: VerifyLoginRequest):
+        db = self.db
         try:
-
             if not data.credential_id:
-                raise HTTPException(status_code=400, detail="Credential ID is required")
+                raise HTTPException(
+                    status_code=400, detail="Credential ID is required"
+                )
 
-            stored_cred = db.query(PasskeyCredential).filter_by(credential_id=data.credential_id).first()
+            cred_result = await db.execute(
+                select(PasskeyCredential).where(
+                    PasskeyCredential.credential_id == data.credential_id)
+            )
+            stored_cred = cred_result.scalars().first()
+
             if not stored_cred:
-                raise HTTPException(status_code=404, detail="Invalid credential ID")
+                raise HTTPException(
+                    status_code=404, detail="Invalid credential ID")
 
-            user = db.query(User).filter_by(id=stored_cred.user_id).first()
+            user_result = await db.execute(
+                select(User).where(User.id == stored_cred.user_id)
+            )
+            user = user_result.scalars().first()
+
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
+
+            department_name = None
+            if user.role.name == 'STUDENT':
+                _result = await db.execute(select(Department).join(StudentDepartment, StudentDepartment.       department_id == Department.id).where(StudentDepartment.student_id == user.id))
+                department_name = _result.scalar()
+            elif user.role.name == 'LECTURER':
+                __result = await db.execute(select(Department).join(LecturerDepartmentAndLevel,         LecturerDepartmentAndLevel.department_id == Department.id).where(LecturerDepartmentAndLevel.lecturer_id == user.id))
+                department_name = __result.scalar()
 
             token = jwt.encode(
                 {"sub": str(user.id), "exp": jwt_expiration},
@@ -145,8 +172,8 @@ class PasskeyLoginRouter:
                 "user_id": user.id,
                 "email": user.email,
                 "role": user.role,
-                'username': user.username
-           
+                'username': user.username,
+                'department': department_name.name if department_name else None,
             })
 
             response.set_cookie(
@@ -156,11 +183,14 @@ class PasskeyLoginRouter:
                 samesite="Lax",
                 secure=False,
                 max_age=60 * 60 * 24
-        )
+            )
 
             return response
 
         except Exception as e:
             print("🔥 ERROR:", str(e))
             traceback.print_exc()
-            raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Unexpected error: {str(e)}"
+            )
+

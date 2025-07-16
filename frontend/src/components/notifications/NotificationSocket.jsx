@@ -17,17 +17,17 @@ export default function NotificationSocket() {
     );
 
     ws.onopen = () => {
-      console.log("WebSocket connected");
+      
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log("Notification received:", data);
+      
       setNotifications((prev) => [data, ...prev.slice(0, 9)]); 
     };
 
     ws.onclose = () => {
-      console.log("WebSocket disconnected");
+      
     };
 
     ws.onerror = (error) => {

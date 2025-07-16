@@ -1,24 +1,27 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, joinedload
 from fastapi_utils.cbv import cbv
-from database import get_db
+from database import get_db, get_db_async
 import asyncio
 from notify import manager
 from datetime import datetime, date, timedelta
 from constants import get_current_user
 from typing import List, Optional
-from model import  User, AssignmentSubmission, AssignmentTemplate, Enrollment, Course
-from schema import Role, CourseResponse,UserResponse,AssignmentOut, UserOut
+from model import User, AssignmentSubmission, StudentLevelProgress, StudentDepartment, Faculty, Department, AssignmentTemplate, Enrollment, Course, StudentResult, Level, SessionModel
+from schema import Role, CourseResponse, UserResponse, AssignmentOut, UserOut, SessionOut
 
 router = APIRouter()
-
-
 
 
 @cbv(router)
 class Student:
     db: Session = Depends(get_db)
     current_user: User = Depends(get_current_user)
+    session: AsyncSession = Depends(get_db_async)
+ 
 
     def _check_admin(self):
         if self.current_user.role != Role.ADMIN:
@@ -263,5 +266,138 @@ class Student:
             "data": data
         }
 
+    @router.get("/student/my-results")
+    def get_my_results(self):
+        self._check_student()
+        db = self.db
+        student = self.current_user
+        student_dept_rel = db.query(StudentDepartment).filter_by(
+            student_id=student.id).first()
+        department = db.query(Department).filter_by(
+            id=student_dept_rel.department_id).first() if student_dept_rel else None
+        faculty = db.query(Faculty).filter_by(
+            id=department.faculty_id).first() if department else None
 
+        student_progress = db.query(StudentLevelProgress).    filter_by(
+            student_id=student.id).order_by(StudentLevelProgress.id.desc()).first()
+        level = db.query(Level).filter_by(
+            id=student_progress.    level_id).first() if student_progress else None
 
+        enrollments = db.query(Enrollment).join(Course).filter(
+            Enrollment.student_id == student.id).all()
+
+        results = []
+        total_weighted_points = 0
+        total_units = 0
+
+        grade_scale = {'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1, 'F': 0}
+
+        for enrollment in enrollments:
+            course = enrollment.course
+
+            student_result = db.query(StudentResult).filter_by(
+                student_id=student.id,
+                course_id=course.id
+            ).first()
+
+            if student_result:
+                assignment_score = student_result.    assignment_score
+                exam_score = student_result.exam_score
+                total = student_result.total_score
+                letter_grade = student_result.paper_grade
+            else:
+                assignment_score = 0.0
+                exam_score = 0.0
+                total = 0.0
+                letter_grade = '-'
+
+            grade_value = grade_scale.get(letter_grade, 0)
+            weighted_points = grade_value * course.grade_point
+
+            total_weighted_points += weighted_points
+            total_units += course.grade_point
+
+            results.append({
+                "course_name": course.title,
+                "assignment_score": assignment_score,
+                "exam_score": exam_score,
+                "total": total,
+                "letter_grade": letter_grade,
+            })
+
+        cgpa = round(total_weighted_points / total_units, 2)     if total_units > 0 else 0.0
+
+        if cgpa >= 4.5:
+            class_of_degree = "First Class"
+        elif cgpa >= 3.5:
+            class_of_degree = "Second Class Upper"
+        elif cgpa >= 2.4:
+            class_of_degree = "Second Class Lower"
+        elif cgpa >= 1.5:
+            class_of_degree = "Third Class"
+        elif cgpa >= 1.0:
+            class_of_degree = "Pass"
+        else:
+            class_of_degree = "Fail"
+
+        return {
+            "student_name": student.name,
+            "department": department.name if department else None,
+            "faculty": faculty.name if faculty else None,
+            "level": level.name if level else None,
+            "results": results,
+            "cgpa": cgpa,
+            "class_of_degree": class_of_degree
+        }
+    
+    @router.get("/my/department/courses")
+    async def get_department_courses(self, request: Request):
+        self._check_student()
+        current_user = self.current_user
+        session = self.session
+       
+
+    # Get the student's department
+        dept_result = await session.execute(
+            select(Department)
+            .join(StudentDepartment, StudentDepartment.    department_id == Department.id)
+            .where(StudentDepartment.student_id == current_user.id)
+        )
+        department = dept_result.scalar_one_or_none()
+
+        if not department:
+            raise HTTPException(status_code=404,     detail="Student is not assigned to any department")
+
+    
+        result = await session.execute(
+            select(Course)
+            .where(Course.department_id == department.id)
+            .options(
+                joinedload(Course.lecturer),
+                joinedload(Course.department),
+            )
+        )
+
+        courses = result.scalars().all()
+
+    # Format the response
+        course_list = []
+        for course in courses:
+            course_list.append({
+                "id": course.id,
+                "title": course.title,
+                "description": course.description,
+                "grade_point": course.grade_point,
+                "syllabus_path": course.syllabus_path,
+                "lecturer_name": course.lecturer.name if     course.lecturer else "Unassigned",
+                "department_name": course.department.name if     course.department else "Unknown",
+        })
+
+        return JSONResponse(course_list)
+    @router.get("/school/", response_model=List[SessionOut])
+    def get_sessions(self):
+
+        self._check_admin()
+
+        sessions = self.db.query(SessionModel).all()
+        return sessions

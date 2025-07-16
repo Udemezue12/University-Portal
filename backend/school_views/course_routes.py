@@ -88,7 +88,7 @@ class CourseRoutes:
                 detail="Level not found or doesn't belong to selected department."
             )
 
-        syllabus_path = save_uploaded_file(syllabus) if syllabus else None
+        syllabus_path = await save_uploaded_file(syllabus) if syllabus else None
 
         course = Course(
             title=title,

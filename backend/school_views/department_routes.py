@@ -84,7 +84,7 @@ class DepartmentRoutes:
     @router.get("/departments", response_model=List[DepartmentOut])
     def get_departments(self):
 
-        self._check_admin()
+        # self._check_admin()
 
         departments = self.db.query(Department).options(
             joinedload(Department.session)).all()

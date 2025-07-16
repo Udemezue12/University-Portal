@@ -80,9 +80,10 @@ class SessionRoutes:
             }
         }
 
-    @router.get("/sessions", response_model=List[SessionOut])
+    @router.get("/school/sessions", response_model=List[SessionOut])
     def get_sessions(self):
 
         self._check_admin()
 
-        return self.db.query(SessionModel).all()
+        sessions = self.db.query(SessionModel).all()
+        return sessions

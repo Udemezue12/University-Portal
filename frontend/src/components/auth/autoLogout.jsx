@@ -37,10 +37,22 @@ const AutoLogoutManager = ({ children }) => {
       clearTimeout(logoutTimer);
       logoutTimer = setTimeout(() => {
         handleAutoLogout();
-      }, 5 * 60 * 1000);
+      }, 4 * 60 * 1000); 
     };
 
-    const events = [
+    // const pingBackend = async () => {
+    //   try {
+    //     const csrf_token = await fetchFastCsrfToken();
+    //     await axios.get(`${API_URL}/ping`, {
+    //       headers: { "X-CSRF-TOKEN": csrf_token },
+    //       withCredentials: true,
+    //     });
+    //   } catch (err) {
+    //     console.error("Ping failed:", err);
+    //   }
+    // };
+
+    const activityEvents = [
       "mousemove",
       "keydown",
       "scroll",
@@ -48,15 +60,27 @@ const AutoLogoutManager = ({ children }) => {
       "mousedown",
       "touchstart",
     ];
-    events.forEach((event) => window.addEventListener(event, resetTimer));
+
+    const handleActivity = () => {
+      resetTimer();
+      // pingBackend();
+    };
+
+    activityEvents.forEach((event) =>
+      window.addEventListener(event, handleActivity)
+    );
     resetTimer();
+
+    // const pingInterval = setInterval(pingBackend, 60000); // ping every 1 min
 
     return () => {
       clearTimeout(logoutTimer);
-      events.forEach((event) => window.removeEventListener(event, resetTimer));
+      // clearInterval(pingInterval);
+      activityEvents.forEach((event) =>
+        window.removeEventListener(event, handleActivity)
+      );
     };
   }, [handleAutoLogout]);
-
   return children;
 };
 

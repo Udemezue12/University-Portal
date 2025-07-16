@@ -1,8 +1,8 @@
-"""First migrations
+"""First  migrations
 
-Revision ID: 1a625531e8bc
+Revision ID: 98b948da22bd
 Revises: 
-Create Date: 2025-07-12 22:52:17.132777
+Create Date: 2025-07-14 19:28:07.222089
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1a625531e8bc'
+revision: str = '98b948da22bd'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -174,6 +174,21 @@ def upgrade() -> None:
     sa.UniqueConstraint('student_id', 'course_id', name='uix_student_course')
     )
     op.create_index(op.f('ix_enrollments_id'), 'enrollments', ['id'], unique=False)
+    op.create_table('student_results',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('student_id', sa.Integer(), nullable=False),
+    sa.Column('course_id', sa.Integer(), nullable=False),
+    sa.Column('exam_score', sa.Float(), nullable=False),
+    sa.Column('assignment_score', sa.Float(), nullable=False),
+    sa.Column('total_score', sa.Float(), nullable=False),
+    sa.Column('paper_grade', sa.String(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['course_id'], ['courses.id'], ),
+    sa.ForeignKeyConstraint(['student_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('student_id', 'course_id', name='uix_student_course_result')
+    )
+    op.create_index(op.f('ix_student_results_id'), 'student_results', ['id'], unique=False)
     op.create_table('assignment_submissions',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('assignment_id', sa.Integer(), nullable=False),
@@ -210,6 +225,8 @@ def downgrade() -> None:
     op.drop_table('assignment_grades')
     op.drop_index(op.f('ix_assignment_submissions_id'), table_name='assignment_submissions')
     op.drop_table('assignment_submissions')
+    op.drop_index(op.f('ix_student_results_id'), table_name='student_results')
+    op.drop_table('student_results')
     op.drop_index(op.f('ix_enrollments_id'), table_name='enrollments')
     op.drop_table('enrollments')
     op.drop_index(op.f('ix_assignment_templates_id'), table_name='assignment_templates')

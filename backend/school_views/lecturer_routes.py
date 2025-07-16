@@ -1,11 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, File, Query
-from sqlalchemy.orm import Session, joinedload
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from configs import convert_to_url
+from database import get_db, get_db_async
+from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi_utils.cbv import cbv
-from database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from constants import get_current_user
+from validators import validate_csrf
 from typing import List, Optional
-from model import Level, User, LecturerDepartmentAndLevel, Course, Enrollment
-from schema import UserOut,  Role, CourseResponse, UserResponse, DepartmentResponse, LevelResponse, DepartmentRes
+from model import Level, User, LecturerDepartmentAndLevel, Course, Enrollment, Faculty, Department, StudentDepartment, StudentLevelProgress
+from schema import UserOut,  Role, CourseResponse, UserResponse, DepartmentResponse, LevelResponse, DepartmentRes, CourseOut, LecturerCourseResponse, StudentResponse
+
 
 router = APIRouter()
 
@@ -46,14 +51,14 @@ class Lecturer:
             })
         return data
 
-    @router.get("/lecturer/levels/{department_id}", response_model=List[LevelResponse])
-    def get_levels_for_department(self, department_id: int):
-        self._check_lecturer()
+    # @router.get("/lecturer/levels/{department_id}", response_model=List[LevelResponse])
+    # def get_levels_for_department(self, department_id: int):
+    #     self._check_lecturer()
 
-        levels = self.db.query(Level).filter(
-            Level.department_id == department_id).all()
+    #     levels = self.db.query(Level).filter(
+    #         Level.department_id == department_id).all()
 
-        return levels
+    #     return levels
 
     @router.get("/lecturer/departments", response_model=List[DepartmentRes])
     def get_lecturer_departments(self):
@@ -131,8 +136,11 @@ class Lecturer:
             .limit(page_size)
             .all()
         )
-
-        data = [CourseResponse.from_orm(course).dict() for course in courses]
+        data = []
+        for course in courses:
+            course_data = CourseResponse.from_orm(course).dict()
+            course_data["syllabus_path"] = convert_to_url(course.syllabus_path)
+            data.append(course_data)
 
         return {
             "status": "success",
@@ -209,11 +217,12 @@ class Lecturer:
     def get_assigned_departments(self):
         self._check_lecturer()
 
-        lecturer_departments = self.db.query(LecturerDepartmentAndLevel).filter_by(
-            lecturer_id=self.current_user.id
-        ).all()
-
-        departments = [ld.department for ld in lecturer_departments]
+        lecturer_id = self.current_user.id
+        departments = (
+            self.db.query(Department)
+            .join(LecturerDepartmentAndLevel, LecturerDepartmentAndLevel.department_id == Department.id)
+            .filter(LecturerDepartmentAndLevel.lecturer_id == lecturer_id).all()
+        )
 
         return [
             DepartmentResponse(
@@ -224,6 +233,40 @@ class Lecturer:
             )
             for dept in departments
         ]
+
+    @router.get("/assigned/levels/{department_id}", response_model=List[LevelResponse])
+    def get_levels_for_department(self, department_id: int):
+        self._check_lecturer()
+        lecturer_id = self.current_user.id
+
+        levels = (
+            self.db.query(Level)
+            .join(LecturerDepartmentAndLevel,     LecturerDepartmentAndLevel.level_id == Level.id)
+            .filter(
+                LecturerDepartmentAndLevel.lecturer_id == lecturer_id,
+                LecturerDepartmentAndLevel.department_id == department_id
+            )
+            .all()
+        )
+
+        return [LevelResponse.from_orm(level) for level in levels]
+
+    @router.get("/assigned/courses/{department_id}/{level_id}", response_model=List[LecturerCourseResponse])
+    def get_courses_for_department_and_level(self,     department_id: int, level_id: int):
+        self._check_lecturer()
+        lecturer_id = self.current_user.id
+
+        courses = (
+            self.db.query(Course)
+            .filter(
+                Course.lecturer_id == lecturer_id,
+                Course.department_id == department_id,
+                Course.level_id == level_id
+            )
+            .all()
+        )
+
+        return [CourseResponse.from_orm(course) for course in courses]
 
     @router.get("/lecturers-departments-courses", response_model=dict)
     def get_lecturers_departments_courses(self,):
@@ -266,3 +309,111 @@ class Lecturer:
             "message": "Lecturers with departments and courses retrieved successfully.",
             "data": data
         }
+
+    @router.get("/lecturer/students-by-faculty-dept-level")
+    def get_students_under_lecturer_courses(self):
+        self._check_lecturer()
+        current_user = self.current_user
+        db = self.db
+
+        faculties = db.query(Faculty).options(joinedload(
+            Faculty.departments).joinedload(Department.levels)).all()
+        result = []
+
+        for faculty in faculties:
+            faculty_obj = {
+                "faculty_name": faculty.name,
+                "departments": []
+            }
+            for dept in faculty.departments:
+                dept_obj = {
+                    "department_name": dept.name,
+                    "levels": []
+                }
+                for level in dept.levels:
+
+                    courses = db.query(Course).filter(
+                        Course.lecturer_id == current_user.id,
+                        Course.department_id == dept.id,
+                        Course.level_id == level.id
+                    ).all()
+                    student_list = []
+                    for course in courses:
+                        enrollments = db.query(Enrollment).    filter(
+                            Enrollment.course_id == course.    id).all()
+                        for enrollment in enrollments:
+                            student = db.query(User).filter(
+                                User.id == enrollment.student_id).    first()
+                            if student:
+                                student_list.append({
+                                    "id": student.id,
+                                    "name": student.name,
+                                    "email": student.email,
+                                    "course_title": course.    title,
+                                    "level": level.name,
+                                    "department": dept.name,
+                                    "faculty": faculty.name
+                                })
+                    if student_list:
+                        dept_obj["levels"].append({
+                            "level_name": level.name,
+                            "students": student_list
+                        })
+                if dept_obj["levels"]:
+                    faculty_obj["departments"].append(dept_obj)
+            if faculty_obj["departments"]:
+                result.append(faculty_obj)
+        return result
+
+    @router.get("/assigned/students/{department_id}/{level_id}", response_model=List[StudentResponse])
+    def get_students_for_department_and_level(self,     department_id: int, level_id: int):
+        self._check_lecturer()
+
+        students = (
+            self.db.query(User)
+            .join(StudentDepartment, StudentDepartment.    student_id == User.id)
+            .join(StudentLevelProgress, StudentLevelProgress.    student_id == User.id)
+            .filter(
+                StudentDepartment.department_id == department_id,
+                StudentLevelProgress.level_id == level_id
+            )
+            .all()
+        )
+
+        return [StudentResponse.from_orm(student) for student in students]
+
+
+@router.get("/courses/", response_model=list[CourseOut])
+async def get_all_courses(session: AsyncSession = Depends(get_db_async)):
+    result = await session.execute(select(Course).options(
+        selectinload(Course.lecturer),
+        selectinload(Course.department),
+        selectinload(Course.levels)
+    ))
+    courses = result.scalars().all()
+
+    course_list = []
+    for course in courses:
+        course_list.append(CourseOut(
+            id=course.id,
+            title=course.title,
+            description=course.description,
+            lecturer_name=course.lecturer.username if course.lecturer else None,
+            department_name=course.department.name if course.department else None,
+            level_name=course.levels.name if course.levels else None,
+        ))
+
+    return course_list
+
+
+@router.get("/lecturer/levels/{department_id}", response_model=List[LevelResponse])
+async def get_levels_for_department(
+    department_id: int,
+    db: AsyncSession = Depends(get_db_async),
+    current_user: User = Depends(get_current_user)
+):
+
+    result = await db.execute(
+        select(Level).where(Level.department_id == department_id))
+    levels = result.scalars().all()
+    return levels

@@ -81,7 +81,7 @@ const RegisterFingerprint = () => {
         String.fromCharCode(...new Uint8Array(attestationObject))
       );
 
-      console.log("Sending POST with CSRF Token:", csrf_token);
+      
       const response = await axios.post(
         `${API_URL}/register/passkey`,
         {
@@ -97,7 +97,7 @@ const RegisterFingerprint = () => {
         }
       );
 
-      console.log("Backend response:", response.data);
+      
       alert("Passkey created successfully!");
       window.location.reload();
     } catch (error) {

@@ -6,7 +6,8 @@ from model import User, Course
 import os
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
-from constants import get_db, get_current_user
+from constants import get_current_user
+from database import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_utils.cbv import cbv
 from env_const import OPENAI_API_KEY, GEMINI_API_KEY
@@ -22,7 +23,7 @@ if GEMINI_API_KEY:
 
 @cbv(openai_router)
 class AIRoutes:
-    db: Session = Depends(get_db)
+    # db: Session = Depends(get_db)
     current_user: User = Depends(get_current_user)
 
     def _check_student(self):

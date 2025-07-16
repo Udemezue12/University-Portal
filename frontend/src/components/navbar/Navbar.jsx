@@ -1,10 +1,10 @@
 import React from "react";
 import { Navbar, Nav, Container } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
-import { FaKey, FaUserCircle  } from "react-icons/fa";
+import { FaKey, FaUserCircle } from "react-icons/fa";
 import { FiLogOut, FiArrowLeft } from "react-icons/fi";
 import "./Navbar.css";
-import { role } from "../components/constants/localStorage";
+import { role } from "../constants/localStorage";
 const getBackLink = () => {
   if (role === "admin") return "/admin/dashboard";
   if (role === "lecturer") return "/lecturer/dashboard";
@@ -22,8 +22,6 @@ const UniversityNavbar = () => {
     alignItems: "center",
     fontSize: "1.5rem",
   });
-
- 
 
   return (
     <Navbar expand="lg" className="university-navbar py-2" variant="dark">

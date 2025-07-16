@@ -13,7 +13,7 @@ export default function LecturerGradedAssignments() {
     const fetchGradedAssignments = async () => {
       try {
         const csrf_token = await fetchFastCsrfToken();
-        const res = await axios.get(`${API_URL}lecturer/graded-assignments`, {
+        const res = await axios.get(`${API_URL}/lecturer/graded-assignments`, {
           headers: { "X-CSRF-TOKEN": csrf_token },
           withCredentials: true,
         });

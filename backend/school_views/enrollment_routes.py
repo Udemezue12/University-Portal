@@ -1,15 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from fastapi_utils.cbv import cbv
-from database import get_db
 import asyncio
 from notify import manager
 from constants import get_current_user
 from typing import List
 from model import User,  LecturerDepartmentAndLevel, Course, StudentDepartment,  Enrollment
-from schema import Role, EnrollmentCreate, EnrollmentResponse, CourseInEnrollmentResponse
+from schema import Role,EnrollCourseBaseResponse, EnrollmentCreate, EnrollmentResponse, CourseInEnrollmentResponse, ApproveEnrollmentResponse,ApproveCourseInEnrollmentResponse
 
-
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from database import get_db, get_db_async
+from fastapi.responses import JSONResponse
 router = APIRouter()
 
 
@@ -17,6 +19,7 @@ router = APIRouter()
 class EnrollmentRoutes:
     db: Session = Depends(get_db)
     current_user: User = Depends(get_current_user)
+    session: AsyncSession = Depends(get_db_async)
 
     def _check_student(self):
         if self.current_user.role != Role.STUDENT:
@@ -147,19 +150,16 @@ class EnrollmentRoutes:
         }
 
     @router.get("/enrollments", response_model=List[EnrollmentResponse])
-    def list_my_enrollments(self):
+    async def list_my_enrollments(self):
         self._check_student()
+        db = self.session
+        current_user = self.current_user
 
-        enrollments = (
-            self.db.query(Enrollment)
-            .options(
-                joinedload(Enrollment.course).joinedload(Course.lecturer),
-                joinedload(Enrollment.course).joinedload(Course.department)
-            )
-            .filter(Enrollment.student_id == self.    current_user.id)
-            .all()
-        )
-
+        _result = await db.execute(select(Enrollment).options(
+            joinedload(Enrollment.course).joinedload(Course.lecturer), joinedload(
+                Enrollment.course).joinedload(Course.department)
+        ).where(Enrollment.student_id == current_user.id))
+        enrollments = _result.scalars().all()
         enriched_response = []
 
         for enrollment in enrollments:
@@ -168,7 +168,7 @@ class EnrollmentRoutes:
             response = EnrollmentResponse(
                 id=enrollment.id,
                 status=enrollment.status,
-                course=CourseInEnrollmentResponse(
+                course=EnrollCourseBaseResponse(
                     id=course.id,
                     title=course.title,
                     description=course.description,
@@ -199,17 +199,19 @@ class EnrollmentRoutes:
         self.db.commit()
         self.db.refresh(enrollment)
         course = enrollment.course
-        response_data = EnrollmentResponse(
+        course_data =ApproveCourseInEnrollmentResponse(
+            id=course.id,
+            title=course.title,
+            description=course.description,
+            grade_point=course.grade_point,
+            lecturer_name=course.lecturer.name if course.lecturer else "N/A",
+            department_name=course.department.name if course.department else "N/A"
+        )
+
+        response_data = ApproveEnrollmentResponse(
             id=enrollment.id,
             status=enrollment.status,
-            course=CourseInEnrollmentResponse(
-                id=course.id,
-                title=course.title,
-                description=course.description,
-                grade_point=course.grade_point,
-                lecturer_name=course.lecturer.name if course.lecturer else "N/A",
-                department_name=course.department.name if course.department else "N/A"
-            )
+            course=course_data
         )
 
         asyncio.create_task(manager.send_personal_message(
@@ -246,17 +248,19 @@ class EnrollmentRoutes:
         self.db.refresh(enrollment)
 
         course = enrollment.course
-        response_data = EnrollmentResponse(
+        course_data = CourseInEnrollmentResponse(
+            id=course.id,
+            title=course.title,
+            description=course.description,
+            grade_point=course.grade_point,
+            lecturer_name=course.lecturer.name if course.lecturer else "N/A",
+            department_name=course.department.name if course.department else "N/A"
+        )
+
+        response_data = ApproveEnrollmentResponse(
             id=enrollment.id,
             status=enrollment.status,
-            course=CourseInEnrollmentResponse(
-                id=course.id,
-                title=course.title,
-                description=course.description,
-                grade_point=course.grade_point,
-                lecturer_name=course.lecturer.name if course.lecturer else "N/A",
-                department_name=course.department.name if course.department else "N/A"
-            )
+            course=course_data
         )
 
         asyncio.create_task(manager.send_personal_message(

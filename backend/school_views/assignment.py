@@ -4,11 +4,11 @@ from fastapi_utils.cbv import cbv
 from database import get_db
 import asyncio
 from notify import manager
-
+from datetime import datetime
 from constants import get_current_user, save_uploaded_file
 from typing import List
 from model import Level, User, SessionModel,  Course, StudentLevelProgress,  AssignmentGrade, AssignmentSubmission, AssignmentTemplate, Enrollment
-from schema import  Role, AssignmentTemplateCreate, SubmittedAssignmentOut, GPAResponse, AssignmentDetailOut, GradeAssignmentDetailOut, StudentResultResponse, StudentResultSchema
+from schema import Role, AssignmentTemplateCreate, SubmittedAssignmentOut, GPAResponse, AssignmentDetailOut, GradeAssignmentDetailOut, StudentResultResponse, StudentResultSchema
 from typing import List
 from model import AssignmentTemplate, Course, Enrollment, AssignmentSubmission, User, StudentLevelProgress, AssignmentGrade, SessionModel, Level
 
@@ -126,16 +126,12 @@ class AssignmentRoutes:
         }
 
     def get_letter_grade(self, score):
-        if score >= 70:
+        if score >= 25:
             return "A"
-        elif score >= 60:
+        elif score >= 20:
             return "B"
-        elif score >= 50:
+        elif score >= 15:
             return "C"
-        elif score >= 45:
-            return "D"
-        elif score >= 40:
-            return "E"
         else:
             return "F"
 
@@ -177,14 +173,14 @@ class AssignmentRoutes:
         new_grade = AssignmentGrade(
             submission_id=submission_id,
             score=score,
-            letter_grade='PENDING',
             feedback=feedback,
-            graded_by_id=current_user
+            graded_by_id=current_user,
+            created_at=datetime.utcnow()
         )
         db.add(new_grade)
         db.commit()
         db.refresh(new_grade)
-       
+
         return {
             "status": "success",
             "message": f"Assignment graded with score {score}/30",
@@ -234,8 +230,8 @@ class AssignmentRoutes:
             course = grade.submission.assignment.course
             credit_unit = course.grade_point
             percentage = grade.score
-            letter = grade.letter_grade.upper()
-            point = letter_to_point.get(letter, 0.0)
+            # letter = grade.letter_grade.upper()
+            point = letter_to_point.get( 0.0)
 
             weighted = point * credit_unit
             total_weighted_points += weighted
@@ -244,7 +240,7 @@ class AssignmentRoutes:
         course_results.append({
             "course": course.title,
             "credit_unit": credit_unit,
-            "grade_letter": letter,
+            # "grade_letter": letter,
             "grade_point": point,
             "percentage": percentage
         })
@@ -298,31 +294,6 @@ class AssignmentRoutes:
 
         )
 
-    # @router.get("/lecturer/submitted-assignments",     response_model=List[SubmittedAssignmentOut])
-    # def get_submitted_assignments_for_lecturer(self):
-    #     self._check_lecturer()
-    #     db = self.db
-    #     lecturer_id = self.current_user.id
-    #     assignments = db.query(AssignmentSubmission).join(AssignmentTemplate).join(Course).filter(
-    #         Course.lecturer_id == lecturer_id
-    #     ).all()
-
-    #     return [
-    #         SubmittedAssignmentOut(
-    #             submission_id=sub.id,
-    #             assignment_id=sub.assignment.id,
-    #             assignment_title=sub.assignment.title,
-    #             course_id=sub.assignment.course.id,
-    #             course_title=sub.assignment.course.title,
-    #             student_id=sub.student.id,
-    #             student_name=sub.student.name,
-    #             text_submission=sub.text_submission,
-    #             submission_path=sub.submission_path,
-    #             submitted_at=sub.created_at
-    #         )
-    #         for sub in assignments
-    #     ]
-
     @router.get('/lecturer/grade-assignment/{submission_id}', response_model=GradeAssignmentDetailOut)
     def get_assignment_submission_for_grading(self, submission_id: int):
         db = self.db
@@ -350,7 +321,7 @@ class AssignmentRoutes:
             submitted_at=submission.created_at.isoformat()
         )
 
-    @router.get("/lecturer/submitted-assignments",     response_model=list[SubmittedAssignmentOut])
+    @router.get("/lecturer/submitted-assignments",response_model=list[SubmittedAssignmentOut])
     def get_submitted_assignments(self):
         db = self.db
         lecturer = self.current_user
@@ -368,16 +339,22 @@ class AssignmentRoutes:
         for sub in submissions:
 
             response.append(
-                SubmittedAssignmentOut(
-                    submission_id=sub.id,
-                    assignment_title=sub.assignment.title,
-                    course_title=sub.assignment.course.title,
-                    student_name=sub.student.username,
-                    submitted_at=sub.submitted_at,
-                    text_submission=sub.text_submission,
-                    submission_path=sub.submission_path,
+               
+                    SubmittedAssignmentOut(
+                        submission_id=sub.id,
+                        assignment_id=sub.assignment_id,
+                        course_id=sub.assignment.course_id,
+                        student_id=sub.student_id,
+                        assignment_title=sub.assignment.title,
+                        course_title=sub.assignment.course.title,
+                        student_name=sub.student.username,
+                        submitted_at=sub.created_at,
+                        text_submission=sub.text_submission,
+                        submission_path=sub.submission_path,
+                    )
+
                 )
-            )
+            
         return response
 
     @router.get("/lecturer/graded-assignments")
@@ -416,7 +393,7 @@ class AssignmentRoutes:
                 "course_title": course.title,
                 "student_name": student.name,
                 "score": grade.score,
-                "letter_grade": grade.letter_grade,
+               
                 "feedback": grade.feedback,
                 "graded_at": grade.created_at.isoformat(),
                 "level": level_name,
@@ -426,11 +403,10 @@ class AssignmentRoutes:
         return {"results": results}
 
     @router.get("/student/results",     response_model=StudentResultResponse)
-    def get_student_results(self, level: str = Query(None),session: str = Query(None)):
+    def get_student_results(self, level: str = Query(None), session: str = Query(None)):
         self._check_student()
         student_id = self.current_user.id
         db = self.db
-        
 
         level_ids = []
         session_ids = []

@@ -7,6 +7,18 @@ from typing import Optional, Dict
 from datetime import datetime, date
 
 
+class CourseOut(BaseModel):
+    id: int
+    title: str
+    description: str
+    lecturer_name: str
+    department_name: str
+    level_name: str
+
+    class Config:
+        form_atrributes = True
+
+
 class Role(str, Enum):
     STUDENT = 'student'
     LECTURER = 'lecturer'
@@ -35,7 +47,17 @@ class UserProfile(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+class UserRegisterInput(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    name: str
+    role: Role
 
+
+class UserLoginInput(BaseModel):
+    username: str
+    password: str
 class UserResponse(BaseModel):
     id: int
     email: str
@@ -70,6 +92,7 @@ class CourseResponse(BaseModel):
     lecturer_name: Optional[str] = None
     department_name: Optional[str] = None
     level_name: Optional[str] = None
+    syllabus_path: Optional[str]
 
     class Config:
         from_attributes = True
@@ -103,22 +126,46 @@ class EnrollmentCreate(EnrollmentBase):
     pass
 
 
-class EnrollmentResponse(BaseModel):
+class EnrollCourseBaseResponse(BaseModel):
     id: int
-    status: str
-    course: Optional['CourseInfo']
+    title: str
+    description: Optional[str] = None
+    grade_point: int
+    lecturer_name: Optional[str]
+    department_name: Optional[str]
 
     class Config:
         from_attributes = True
-# class EnrollmentResponse(BaseModel):
-#     id: int
-#     student_id: int
-#     course_id: int
-#     status: str
-#     course: Optional[CourseResponse]
 
-#     class Config:
-#         from_attributes = True
+
+class EnrollmentResponse(BaseModel):
+    id: int
+    status: str
+    course: EnrollCourseBaseResponse
+
+    class Config:
+        from_attributes = True
+
+
+class ApproveCourseInEnrollmentResponse(BaseModel):
+    id: int
+    title: str
+    description: Optional[str]
+    grade_point: int
+    lecturer_name: Optional[str]
+    department_name: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class ApproveEnrollmentResponse(BaseModel):
+    id: int
+    status: str
+    course: ApproveCourseInEnrollmentResponse
+
+    class Config:
+        from_attributes = True
 
 # class LecturerInfo(BaseModel):
 #     id: int
@@ -444,7 +491,7 @@ class AssignmentDetailOut(BaseModel):
     updated_at: Optional[datetime] = None
 
     class Config:
-        form_attributes = True
+        from_attributes = True
 
 
 class SubmittedAssignmentOut(BaseModel):
@@ -460,7 +507,7 @@ class SubmittedAssignmentOut(BaseModel):
     submitted_at: datetime
 
     class Config:
-        form_attributes = True
+        from_attributes = True
 
 
 class GradeAssignmentDetailOut(BaseModel):
@@ -473,15 +520,13 @@ class GradeAssignmentDetailOut(BaseModel):
     submitted_at: datetime
 
     class Config:
-        form_attributes = True
+        from_attributes = True
 
 
 class GradeAssignmentInput(BaseModel):
     submission_id: int = Field(..., gt=0)
     score: float = Field(..., gt=0, lt=101)
     feedback: Optional[str] = None
-
-
 
 
 class StudentResultSchema(BaseModel):
@@ -491,8 +536,11 @@ class StudentResultSchema(BaseModel):
     grade_point: int
     assignment_id: int
 
+
 class StudentResultResponse(BaseModel):
     results: List[StudentResultSchema]
+
+
 class CredentialAttestation(BaseModel):
     credential_id: str
     public_key: str
@@ -501,6 +549,125 @@ class CredentialAttestation(BaseModel):
 # class StartLoginRequest(BaseModel):
 #     username: str
 
+
 class VerifyLoginRequest(BaseModel):
-   
+
     credential_id: str
+
+
+class StudentResultCreate(BaseModel):
+    student_id: int
+    course_id: int
+    exam_score: float
+
+
+class StudentResultOut(BaseModel):
+    id: int
+    student_id: int
+    student_name: str
+    course_id: int
+    exam_score: Optional[float] = None
+    assignment_score: float
+    total_score: Optional[float] = None
+    paper_grade: Optional[str] = None
+    has_result: bool
+
+    class Config:
+        from_attributes = True
+
+
+class AdminLecturerOut(BaseModel):
+    id: int
+    name: str
+    email: str
+
+    class Config:
+        from_attributes = True
+
+
+class AdminStudentOut(BaseModel):
+    id: int
+    name: str
+    email: str
+    level: Optional[str]
+    department: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class DepartmentWithLevelsStudents(BaseModel):
+    department_name: str
+    levels: List[dict]
+
+    class Config:
+        from_attributes = True
+# .//////////////////////////////
+
+
+class LecturerCourseResponse(BaseModel):
+    id: int
+    title: str
+    grade_point: int
+    department_id: int
+    level_id: Optional[int]
+
+    class Config:
+        form_atrributes = True
+
+
+class StudentResponse(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    username: str
+
+    class Config:
+        form_atrributes = True
+
+class StudentOut(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+class StudentAddResultOut(BaseModel):
+    id: int
+    student_id: int
+    student: StudentOut
+    course_id: int
+    exam_score: Optional[float] = None
+    assignment_score: float
+    total_score: Optional[float] = None
+    paper_grade: Optional[str] = None
+    has_result: bool
+
+    class Config:
+        from_attributes = True
+
+class StudentResultSubmissionSchema(BaseModel):
+    student_id: int
+    course_id: int
+    exam_score: float
+
+    class Config:
+        from_attributes = True
+
+
+class ResultSubmissionResponse(BaseModel):
+    status: str
+    message: str
+
+
+class StudentResultView(BaseModel):
+    student_id: int
+    student_name: str
+    exam_score: float
+    assignment_score: float
+    total_score: float
+    paper_grade: str
+
+
+class StudentResultListResponse(BaseModel):
+    results: List[StudentResultView]

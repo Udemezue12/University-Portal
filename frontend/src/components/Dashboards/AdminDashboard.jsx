@@ -45,6 +45,24 @@ const AdminDashboard = () => {
           </Col>
           <Col md={4}>
             <DashboardCard
+              title="Students"
+              value="87"
+              icon="bi-journal-bookmark-fill"
+              bg="#36b9cc"
+              link="/students/list"
+            />
+          </Col>
+          <Col md={4}>
+            <DashboardCard
+              title="School Lecturers"
+              value="87"
+              icon="bi-journal-bookmark-fill"
+              bg="#36b9cc"
+              link="/lecturers/list"
+            />
+          </Col>
+          <Col md={4}>
+            <DashboardCard
               title="Create Levels"
               value="87"
               icon="bi-journal-bookmark-fill"

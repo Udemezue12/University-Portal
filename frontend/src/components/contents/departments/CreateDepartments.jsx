@@ -37,10 +37,11 @@ const CreateDepartment = () => {
       const csrf_token = await fetchFastCsrfToken();
       try {
         const [sessionsRes, facultiesRes] = await Promise.all([
-          axios.get(`${API_URL}/sessions`, {
+      
+        axios.get(`${API_URL}/school/`, {
             headers: { "X-CSRF-TOKEN": csrf_token },
             withCredentials: true,
-          }),
+        }),
           axios.get(`${API_URL}/faculties`, {
             headers: { "X-CSRF-TOKEN": csrf_token },
             withCredentials: true,

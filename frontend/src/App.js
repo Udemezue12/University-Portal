@@ -38,18 +38,24 @@ import { UnifiedCourseRecommendation } from "./components/AI/CourseRecommend";
 import AssignStudentToLevel from "./components/contents/departments/AssignStudentsToDepartments";
 import AssignLecturerToLevelsBySession from "./components/contents/departments/AssignLecturersToDepartments";
 import Home from "./components/home/Home";
-// import ErrorPage from "./components/auth/ErrorPage";
+import ErrorPage from "./components/auth/ErrorPage";
 import LecturerGradedAssignments from "./components/contents/assignments/AllGradedStudentAssignments";
 import StudentResultSheet from "./components/contents/assignments/StudentResultSheet";
 import PasskeyRegister from "./components/passkeys/PasskeyRegister";
 import PasskeyLogin from "./components/passkeys/PasskeyLogin";
-import UniversityNavbar from "./navbar/Navbar";
+import UniversityNavbar from "./components/navbar/Navbar";
 import AdminDashboard from "./components/Dashboards/AdminDashboard";
 import StudentDashboard from "./components/Dashboards/StudentDashboard";
 import LecturerDashboard from "./components/Dashboards/LecturerDashboard";
 import Footer from "./components/common/Footer";
 import LogoutModal from "./components/auth/logout";
-import AutoLogoutManager from './components/auth/autoLogout';
+import AutoLogoutManager from "./components/auth/autoLogout";
+import MyResults from "./components/StudentResults/MyResults";
+import ResultSheet from "./components/StudentResults/ResultSheet";
+import StudentsByFacultyDeptLevel from "./components/Lecturer/StudentsByFacultyDeptLevel";
+import LecturersByDeptLevel from "./components/Admin/LecturersByDeptLevel";
+import StudentsByDeptLevel from "./components/Admin/StudentsByDeptLevel";
+import StudentAssignments from "./components/contents/assignments/StudentAssignments";
 
 export default function App() {
   const location = useLocation();
@@ -74,7 +80,7 @@ export default function App() {
             <Route path="/admin/register" element={<AdminRegister />} />
             <Route path="/lecturer/register" element={<LecturerRegister />} />
             <Route path="/passkey/login" element={<PasskeyLogin />} />
-           
+            <Route path="*" element={<ErrorPage />} />
           </Routes>
         )}
 
@@ -84,7 +90,7 @@ export default function App() {
               <Route element={<AuthProtectedRoutes />}>
                 <Route path="/logout" element={<LogoutModal />} />
                 <Route path="/passkey/register" element={<PasskeyRegister />} />
-                
+
                 <Route path="/profile" element={<ViewProfile />} />
 
                 <Route element={<IsAdminProtectedRoutes />}>
@@ -94,6 +100,16 @@ export default function App() {
                   <Route
                     path="/department/create"
                     element={<CreateDepartment />}
+                  />
+
+                  <Route
+                    path="/lecturers/list"
+                    element={<LecturersByDeptLevel />}
+                  />
+
+                  <Route
+                    path="/students/list"
+                    element={<StudentsByDeptLevel />}
                   />
                   <Route path="/levels/create" element={<CreateLevel />} />
                   <Route
@@ -147,6 +163,14 @@ export default function App() {
                     path="/create/assignment"
                     element={<CreateAssignmentForm />}
                   />
+                  <Route
+                    path="/my/students/department"
+                    element={<StudentsByFacultyDeptLevel />}
+                  />
+                  <Route
+                    path="/students/results/sheets"
+                    element={<ResultSheet />}
+                  />
                 </Route>
                 <Route element={<IsStudentProtectedRoutes />}>
                   <Route
@@ -173,6 +197,11 @@ export default function App() {
                   <Route
                     path="/student/dashboard"
                     element={<StudentDashboard />}
+                  />
+                  <Route path="/student/results" element={<MyResults />} />
+                  <Route
+                    path="/my/assignments"
+                    element={<StudentAssignments />}
                   />
                 </Route>
 
@@ -203,6 +232,7 @@ export default function App() {
                   element={<ViewAssignments />}
                 />
               </Route>
+              <Route path="*" element={<ErrorPage />} />
             </Routes>
           </div>
         )}

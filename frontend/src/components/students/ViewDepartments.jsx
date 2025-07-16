@@ -12,7 +12,7 @@ const ViewDepartmentCourses = () => {
 
   useEffect(() => {
     axios
-      .get(`${API_URL}/students/department/courses`, {
+      .get(`${API_URL}/my/department/courses`, {
         withCredentials: true,
       })
       .then((res) => {

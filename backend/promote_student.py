@@ -1,7 +1,7 @@
 from datetime import date
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from constants import get_db
+from database import get_db
 from model import SessionModel, StudentDepartment, StudentPromotionLog, Level
 
 

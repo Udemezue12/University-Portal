@@ -114,13 +114,12 @@ class AssignmentGrade(Base):
     id = Column(Integer, primary_key=True, index=True)
     submission_id = Column(Integer, ForeignKey(
         "assignment_submissions.id"), nullable=False, unique=True)
-    score = Column(Float, nullable=False)  # e.g. 75.0
-    letter_grade = Column(String, nullable=False)  # A, B, C, etc.
+    score = Column(Float, nullable=False)  
+    # letter_grade = Column(String, nullable=False)  
     feedback = Column(String, nullable=True)
 
     graded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-  
 
     submission = relationship("AssignmentSubmission", back_populates="grade")
     graded_by = relationship("User")
@@ -234,8 +233,6 @@ class Level(Base):
 
 class LecturerDepartmentAndLevel(Base):
     __tablename__ = "lecturer_departments"
-    # __table_args__ = (
-    #     UniqueConstraint('lecturer_id', 'department_id', 'session_id', 'level_id', name='uix_lecturer_department'),)
 
     id = Column(Integer, primary_key=True, index=True)
     lecturer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -304,6 +301,7 @@ class StudentPromotionLog(Base):
     to_level = relationship("Level", foreign_keys=[promoted_to_level_id])
     session = relationship("SessionModel")
 
+
 class PasskeyCredential(Base):
     __tablename__ = "passkey_credentials"
 
@@ -316,7 +314,28 @@ class PasskeyCredential(Base):
     user = relationship("User", back_populates="credentials")
 
     __table_args__ = (
-        UniqueConstraint("user_id", "credential_id", name="unique_user_credential"),
-        UniqueConstraint("user_id", "device_fingerprint", name="unique_user_device"),
-        UniqueConstraint("user_id", "public_key", name="unique_user_publickey"),
+        UniqueConstraint("user_id", "credential_id",
+                         name="unique_user_credential"),
+        UniqueConstraint("user_id", "device_fingerprint",
+                         name="unique_user_device"),
+        UniqueConstraint("user_id", "public_key",
+                         name="unique_user_publickey"),
     )
+
+
+class StudentResult(Base):
+    __tablename__ = 'student_results'
+    __table_args__ = (
+        UniqueConstraint('student_id', 'course_id', name='uix_student_course_result'),
+    )
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    course_id = Column(Integer, ForeignKey("courses.id"), nullable=False)
+    exam_score = Column(Float, nullable=False, default=0.0)
+    assignment_score = Column(Float, nullable=False, default=0.0)
+    total_score = Column(Float, nullable=False, default=0.0)
+    paper_grade = Column(String, nullable=False, default='F')
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    student = relationship("User")
+    course = relationship("Course")

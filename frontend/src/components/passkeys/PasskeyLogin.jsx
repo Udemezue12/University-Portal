@@ -3,11 +3,12 @@ import axios from "axios";
 import { API_URL } from "./../api_route/api";
 import { fetchFastCsrfToken } from "./../constants/fetchCsrfToken";
 import ButtonComponent from "../common/ButtonComponent";
-import { Link, useNavigate } from "react-router-dom";
-import { PasskeyRole } from "../constants/localStorage";
+import { Link} from "react-router-dom";
+
 const PasskeyLogin = () => {
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
+  
 
   const base64urlToBuffer = (base64url) => {
     const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
@@ -56,22 +57,26 @@ const PasskeyLogin = () => {
           withCredentials: true,
         }
       );
+      const userData = authResponse.data;
+      if (userData) {
+        localStorage.setItem("username", userData.username);
+        localStorage.setItem("role", userData.role);
+        localStorage.setItem("userId", userData.user_id);
+        localStorage.setItem("department", userData.department);
 
-      localStorage.setItem("userId", authResponse.data.user_id);
-      localStorage.setItem("username", authResponse.data.username);
-      localStorage.setItem("role", authResponse.data.role);
-      const userRole = PasskeyRole
-      setTimeout(() => {
-        if (userRole === "admin") {
-          navigate("/admin/dashboard");
-        } else if (userRole === "lecturer") {
-          navigate("/lecturer/dashboard");
-        } else if (userRole === "student") {
-          navigate("/student/dashboard");
-        } else {
-          navigate("/");
-        }
-      }, 1500);
+        setMessage(userData.msg || "Login successful");
+
+        setTimeout(() => {
+          window.location.href =
+            userData.role === "admin"
+              ? "/admin/dashboard"
+              : userData.role === "lecturer"
+              ? "/lecturer/dashboard"
+              : userData.role === "student"
+              ? "/student/dashboard"
+              : "/logout";
+        }, 1000);
+      }
     } catch (err) {
       console.error("Fingerprint login failed:", err);
       if (err.response && err.response.data?.error) {
@@ -92,6 +97,9 @@ const PasskeyLogin = () => {
           <div className="mb-3">
             <p style={{ color: "red" }}>{error}</p>
           </div>
+        )}
+        {message && (
+          <div className="alert alert-info text-center">{message}</div>
         )}
 
         <div className="d-grid mb-3">

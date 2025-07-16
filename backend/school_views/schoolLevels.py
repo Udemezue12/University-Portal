@@ -27,7 +27,7 @@ class SchoolLevelsRouter:
 
     @router.get("/levels", response_model=List[LevelOut])
     def get_levels(self):
-        self._check_admin()
+        # self._check_admin()
         return self.db.query(Level).options(joinedload(Level.department)).all()
 
     @router.post('/school/levels/create', response_model=LevelOut)

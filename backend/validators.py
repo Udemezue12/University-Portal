@@ -3,12 +3,12 @@ from fastapi import  HTTPException,  Request
 from env_const import SECRET_KEY, ALGORITHM
 
 
-def validate_csrf(request: Request):
+async def validate_csrf(request: Request):
     session_token = request.session.get("csrf_token")
     header_token = request.headers.get("X-CSRF-TOKEN")
     if session_token != header_token:
         raise HTTPException(status_code=403, detail="CSRF token mismatch")
-def jwt_protect(request: Request):
+async def jwt_protect(request: Request):
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -23,7 +23,7 @@ def jwt_protect(request: Request):
         raise HTTPException(status_code=401, detail="Token expired")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
-def passkey_jwt_protect(request: Request) -> int:
+async def passkey_jwt_protect(request: Request) -> int:
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -38,5 +38,5 @@ def passkey_jwt_protect(request: Request) -> int:
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-def validate_csrf_dependency(request:Request):
-    validate_csrf(request)
+async def validate_csrf_dependency(request:Request):
+    await validate_csrf(request)
