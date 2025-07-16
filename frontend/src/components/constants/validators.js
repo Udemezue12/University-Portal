@@ -1,4 +1,4 @@
-// src/utils/formValidators.js
+
 
 export const isValidName = (name) => name && name.trim().length >= 2;
 
@@ -15,7 +15,7 @@ export const validateDepartmentForm = ({ name, session_id }) => {
 };
 
 
-// src/utils/formValidators.js
+
 
 export const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
 

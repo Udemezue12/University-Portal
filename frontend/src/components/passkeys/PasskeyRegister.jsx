@@ -82,7 +82,7 @@ const RegisterFingerprint = () => {
       );
 
       
-      const response = await axios.post(
+       axios.post(
         `${API_URL}/register/passkey`,
         {
           credential_id: credentialId,
