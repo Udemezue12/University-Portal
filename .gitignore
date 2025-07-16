@@ -46,7 +46,7 @@ Thumbs.db
 *.sublime-workspace
 
 # === Render Deploy Files ===
-*.sqlite3
+# *.sqlite3
 render.yaml  # (optional, if you're not versioning it)
 
 # === Compiled files ===

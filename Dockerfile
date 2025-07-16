@@ -31,14 +31,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application code
 COPY backend/ ./backend
+COPY backend/crm.db ./backend/crm.db
 
 # Copy the React build folder into backend so it's served by FastAPI
 COPY --from=frontend-builder /app/frontend/build ./frontend/build
 
-# (Optional) Copy environment variables - only if you read .env in your app
+#  Copy environment variables
 # COPY .env .
 
-# Expose port (Render expects this)
+# Expose port
 EXPOSE 8000
 
 # Start the FastAPI app using Uvicorn
