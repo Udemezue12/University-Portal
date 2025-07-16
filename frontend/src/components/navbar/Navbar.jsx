@@ -51,9 +51,9 @@ const UniversityNavbar = () => {
             <FaKey title="create Passkey" />
           </Nav.Link>
 
-          <Nav.Link as={Link} to="/profile" style={navStyle("/profile")}>
+          {/* <Nav.Link as={Link} to="/profile" style={navStyle("/profile")}>
             <FaUserCircle title="Profile" />
-          </Nav.Link>
+          </Nav.Link> */}
           <Nav.Link as={Link} to="/logout" style={navStyle("/logout")}>
             <FiLogOut title="Logout" />
           </Nav.Link>
