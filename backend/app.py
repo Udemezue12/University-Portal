@@ -23,9 +23,9 @@ from school_views.assignment import router as assignment_router
 from school_views.ai_routes import openai_router
 from school_views.session_routes import router as session_router
 from school_views.student_routes import router as student_router
-from session_views import session_router as session_views
+# from session_views import session_router as session_views
 from Apptoken import csrf_router
-from session import SessionTimeoutMiddleware as TimeOut
+# from session import SessionTimeoutMiddleware as TimeOut
 from notify import manager
 from configs import UPLOAD_DIR
 from validators import SECRET_KEY
@@ -48,7 +48,7 @@ app.include_router(levels_router)
 app.include_router(session_router)
 app.include_router(student_router)
 app.include_router(openai_router)
-app.include_router(session_views)
+# app.include_router(session_views)
 app.include_router(auth_router)
 
 # app.add_middleware(TimeOut, timeout_minutes=5)
