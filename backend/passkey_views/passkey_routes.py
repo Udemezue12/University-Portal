@@ -9,7 +9,7 @@ from base64 import b64decode
 from constants import passkey_get_current_user
 from typing import List
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from model import PasskeyCredential, User, Department, StudentDepartment, LecturerDepartmentAndLevel
 from schema import CredentialAttestation, VerifyLoginRequest
 from validators import passkey_jwt_protect, validate_csrf_dependency
@@ -207,6 +207,12 @@ class PasskeyLoginRouter:
                 secure=True,
                 max_age=60 * 60 * 24
             )
+            # request.session["role"] = user.role
+            # request.session["access_token"] = token
+            # response.set_cookie("access_token", token, httponly=True,
+            #                     samesite="Lax", secure=False, max_age=60 * 60 * 24)
+            # response.set_cookie("role", user.role, httponly=True,
+            #                     samesite="Lax", secure=False, max_age=60 * 60 * 24)
 
             return response
 
