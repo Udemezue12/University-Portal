@@ -1,50 +1,46 @@
-# dependencies.py
-from fastapi import Request, HTTPException, status, APIRouter, Depends
-from fastapi.responses import JSONResponse
-import logging
-from datetime import datetime
+# from fastapi.responses import JSONResponse
+# from fastapi import Request, HTTPException, status, APIRouter, Depends
+# import logging
+# from datetime import datetime
 
 
-session_router = APIRouter()
-logger = logging.getLogger("uvicorn.error")
+# session_router = APIRouter()
+# logger = logging.getLogger("uvicorn.error")
 
 
 # def require_user_session(request: Request):
-#     session = request.session
-#     username = session.get("username")
-#     role = session.get("role")
+   
 
-#     if not username or not role:
+#     role = request.session.get('role') or request.cookies.get("role")
+#     token = request.session.get(
+#         'access_token') or request.cookies.get("access_token")
+
+#     if not role:
 #         logger.warning(f"Suspicious ping attempt - session data missing: "
-#                        f"username={username}, role={role}")
+#                        f" role={role}")
 #         raise HTTPException(
 #             status_code=status.HTTP_401_UNAUTHORIZED,
 #             detail="Session expired or user not authenticated"
 #         )
 
-#     server_token = session.get("access_token")
-#     if server_token:
-#         logger.warning(f"Access Token  token mismatch for user_id={server_token}")
-#         # return ("Success")
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND, detail='Access Token not found'
-
-#         )
+#     if token:
+#         logger.info(f"Access token detected for user {role}")
 
 #     return {
-
-#         "username": username,
-#         "role": role
+       
+#         "role": role,
+#         "access_token": token
 #     }
 
 
 # @session_router.get("/ping")
-# def keep_alive(
-#     request: Request,
-#     user_info: dict = Depends(require_user_session)
-# ):
-#     request.session["last_active"] = datetime.utcnow().isoformat()
+# def keep_alive(request: Request, user_info: dict = Depends(require_user_session)):
+#     now = datetime.utcnow().isoformat()
 
-#     # print(f"[PING] User: {user_info['username']} (ID: {user_info['user_id']}) is active")
+#     if hasattr(request, "session"):
+#         request.session["last_active"] = now
 
-#     return {"status": "ok", "user": user_info["username"]}
+#     response = JSONResponse(
+#         content={"status": "ok", "user": user_info["role"]})
+#     response.set_cookie("last_active", now, httponly=True, samesite="Lax", secure=False)
+#     return response
