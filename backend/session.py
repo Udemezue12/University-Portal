@@ -1,28 +1,47 @@
-from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi import Request
-from datetime import datetime, timedelta
+# from starlette.middleware.base import BaseHTTPMiddleware
+# from starlette.requests import Request
+# from starlette.responses import Response
+# from datetime import datetime, timedelta
 
-class SessionTimeoutMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, timeout_minutes: int = 5):
-        super().__init__(app)
-        self.timeout = timedelta(minutes=timeout_minutes)
 
-    async def dispatch(self, request: Request, call_next):
-        session = request.session
-        now = datetime.utcnow()
+# class SessionTimeoutMiddleware(BaseHTTPMiddleware):
+#     def __init__(self, app, timeout_minutes: int = 5):
+#         super().__init__(app)
+#         self.timeout = timedelta(minutes=timeout_minutes)
 
-       
-        last_active_str = session.get("last_active")
-        if last_active_str:
-            try:
-                last_active = datetime.fromisoformat(last_active_str)
-                if now - last_active > self.timeout:
-                    session.clear()  
-            except ValueError:
-                session.clear()  
+#     async def dispatch(self, request: Request, call_next):
+#         now = datetime.utcnow()
 
-       
-        session["last_active"] = now.isoformat()
+#         last_active_str = None
+#         if hasattr(request, "session"):
+#             last_active_str = request.session.get("last_active")
+#         if not last_active_str:
+#             last_active_str = request.cookies.get("last_active")
 
-        response = await call_next(request)
-        return response
+#         should_clear = False
+
+#         if last_active_str:
+#             try:
+#                 last_active = datetime.fromisoformat(last_active_str)
+#                 if now - last_active > self.timeout:
+#                     should_clear = True
+#             except ValueError:
+#                 should_clear = True
+
+#         response: Response = await call_next(request)
+
+#         if should_clear:
+#             if hasattr(request, "session"):
+#                 request.session.clear()
+#             response.delete_cookie("last_active")
+
+#         if hasattr(request, "session"):
+#             request.session["last_active"] = now.isoformat()
+#         response.set_cookie(
+#             "last_active",
+#             now.isoformat(),
+#             httponly=True,
+#             samesite="Lax"
+#         )
+
+#         return response
