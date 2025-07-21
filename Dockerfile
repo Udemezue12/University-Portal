@@ -1,4 +1,4 @@
-////FOR RENDER////////
+# ////FOR RENDER////////
 
 # ---------- Build React Frontend ----------
 FROM node:18-bookworm AS frontend-builder
