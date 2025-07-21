@@ -56,7 +56,10 @@ app.add_middleware(
     allow_origins=[
         'http://localhost:7000',
         'http://localhost:5000',
-        'http://localhost:3000'
+        'http://localhost:3000',
+        "https://crm-1uxm.onrender.com",
+        "crm-1uxm.onrender.com",
+        "wss:crm-1uxm.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -79,6 +82,8 @@ app.mount(
 )
 
 # Upload Folder Creation
+
+
 @app.on_event("startup")
 def create_upload_folder():
     try:
@@ -87,9 +92,12 @@ def create_upload_folder():
         print(f"Upload folder creation failed: {e}")
 
 # Serve React Frontend
+
+
 @app.get("/")
 def read_index():
     return FileResponse(BASE_DIR.parent / "frontend" / "build" / "index.html")
+
 
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
@@ -99,6 +107,8 @@ async def catch_all(full_path: str):
     return FileResponse(BASE_DIR.parent / "frontend" / "build" / "index.html")
 
 # Notifications WebSocket
+
+
 @app.websocket("/ws/notifications")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
