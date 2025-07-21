@@ -1,4 +1,3 @@
-
 import os
 import uvicorn
 from pathlib import Path
@@ -8,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from passlib.context import CryptContext
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+
 from Apptoken import csrf_router
 from passkey_views.passkey_routes import passkey_router
 from auth.auth_routes import auth_router
@@ -28,9 +28,11 @@ from school_views.student_routes import router as student_router
 from notify import manager
 from configs import UPLOAD_DIR
 from validators import SECRET_KEY
+
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
 
+# Routers
 app.include_router(csrf_router)
 app.include_router(result_router)
 app.include_router(admin_router)
@@ -47,15 +49,28 @@ app.include_router(levels_router)
 app.include_router(session_router)
 app.include_router(student_router)
 app.include_router(openai_router)
-app.include_router(auth_router)
 
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        'http://localhost:7000',
+        'http://localhost:5000',
+        'http://localhost:3000'
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Static Files
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
 app.mount(
     "/static",
     StaticFiles(directory=BASE_DIR.parent / "frontend" / "build" / "static"),
     name="static"
 )
-
 
 app.mount(
     "/uploads",
@@ -63,7 +78,7 @@ app.mount(
     name="uploads"
 )
 
-
+# Upload Folder Creation
 @app.on_event("startup")
 def create_upload_folder():
     try:
@@ -71,11 +86,10 @@ def create_upload_folder():
     except Exception as e:
         print(f"Upload folder creation failed: {e}")
 
-
+# Serve React Frontend
 @app.get("/")
 def read_index():
     return FileResponse(BASE_DIR.parent / "frontend" / "build" / "index.html")
-
 
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
@@ -84,7 +98,7 @@ async def catch_all(full_path: str):
         return FileResponse(potential_file)
     return FileResponse(BASE_DIR.parent / "frontend" / "build" / "index.html")
 
-
+# Notifications WebSocket
 @app.websocket("/ws/notifications")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
@@ -94,18 +108,9 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-# app.add_middleware(TimeOut, timeout_minutes=5)
+# Session Middleware
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['http://localhost:7000',
-                   'http://locahost:5000', 'http://localhost:3000'],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.add_middleware(
-    SessionMiddleware, secret_key=SECRET_KEY)
+# Dev Server
 if __name__ == "__main__":
-
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
