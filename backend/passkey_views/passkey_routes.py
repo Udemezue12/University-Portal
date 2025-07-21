@@ -1,4 +1,3 @@
-import os
 from webauthn.helpers.structs import (
     UserVerificationRequirement
 )
@@ -9,7 +8,7 @@ from base64 import b64decode
 from constants import passkey_get_current_user
 from typing import List
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from model import PasskeyCredential, User, Department, StudentDepartment, LecturerDepartmentAndLevel
 from schema import CredentialAttestation, VerifyLoginRequest
 from validators import passkey_jwt_protect, validate_csrf_dependency
@@ -18,7 +17,7 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db, get_db_async
 from fastapi_utils.cbv import cbv
-from sqlalchemy.orm import Session
+
 from base_code import base64url_encode
 from jose import jwt
 from env_const import RP_ID, jwt_expiration, SECRET_KEY, ALGORITHM
@@ -32,7 +31,6 @@ class PasskeyRegisterRouter:
     user_id: int = Depends(passkey_jwt_protect)
     db: AsyncSession = Depends(get_db_async)
     validate_csrf: None = Depends(validate_csrf_dependency)
-    
 
     @passkey_router.get('/passkey/devices')
     async def get_registered_passkey(self):
@@ -50,9 +48,9 @@ class PasskeyRegisterRouter:
         ]
 
     @passkey_router.post("/register/passkey")
-    async def register_passkey(self, data: CredentialAttestation, current_user = Depends(passkey_get_current_user)):
+    async def register_passkey(self, data: CredentialAttestation, current_user=Depends(passkey_get_current_user)):
         db = self.db
-       
+
         try:
             public_key_bytes = b64decode(data.public_key)
         except Exception:
@@ -179,10 +177,10 @@ class PasskeyLoginRouter:
 
             department_name = None
             if user.role.name == 'STUDENT':
-                _result = await db.execute(select(Department).join(StudentDepartment, StudentDepartment.       department_id == Department.id).where(StudentDepartment.student_id == user.id))
+                _result = await db.execute(select(Department).join(StudentDepartment, StudentDepartment.department_id == Department.id).where(StudentDepartment.student_id == user.id))
                 department_name = _result.scalar()
             elif user.role.name == 'LECTURER':
-                __result = await db.execute(select(Department).join(LecturerDepartmentAndLevel,         LecturerDepartmentAndLevel.department_id == Department.id).where(LecturerDepartmentAndLevel.lecturer_id == user.id))
+                __result = await db.execute(select(Department).join(LecturerDepartmentAndLevel, LecturerDepartmentAndLevel.department_id == Department.id).where(LecturerDepartmentAndLevel.lecturer_id == user.id))
                 department_name = __result.scalar()
 
             token = jwt.encode(
@@ -204,14 +202,20 @@ class PasskeyLoginRouter:
                 value=token,
                 httponly=True,
                 samesite="Lax",
-                secure=True,
+                secure=False,
                 max_age=60 * 60 * 24
             )
-
+           
+            # request.session["role"] = user.role
+            # request.session["access_token"] = token
+            # response.set_cookie("access_token", token, httponly=True,
+            #                     samesite="Lax", secure=False, max_age=60 * 60 * 24)
+            # response.set_cookie("role", user.role, httponly=True,
+            #                     samesite="Lax", secure=False, max_age=60 * 60 * 24)
             return response
 
         except Exception as e:
-            print("🔥 ERROR:", str(e))
+            print(" ERROR:", str(e))
             traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail=f"Unexpected error: {str(e)}"

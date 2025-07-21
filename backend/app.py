@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from passlib.context import CryptContext
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from Apptoken import csrf_router
 from passkey_views.passkey_routes import passkey_router
 from auth.auth_routes import auth_router
 from school_views.course_routes import router as course_router
@@ -23,9 +24,7 @@ from school_views.assignment import router as assignment_router
 from school_views.ai_routes import openai_router
 from school_views.session_routes import router as session_router
 from school_views.student_routes import router as student_router
-from session_views import session_router
-from Apptoken import csrf_router
-from session import SessionTimeoutMiddleware as TimeOut
+
 from notify import manager
 from configs import UPLOAD_DIR
 from validators import SECRET_KEY
@@ -48,21 +47,8 @@ app.include_router(levels_router)
 app.include_router(session_router)
 app.include_router(student_router)
 app.include_router(openai_router)
-app.include_router(session_router)
 app.include_router(auth_router)
 
-app.add_middleware(
-    SessionMiddleware, secret_key=SECRET_KEY)
-# app.add_middleware(TimeOut, timeout_minutes=5)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['http://localhost:7000',
-                   'http://locahost:5000', 'http://localhost:3000'],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 app.mount(
     "/static",
@@ -108,6 +94,18 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
+# app.add_middleware(TimeOut, timeout_minutes=5)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:7000',
+                   'http://locahost:5000', 'http://localhost:3000'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.add_middleware(
+    SessionMiddleware, secret_key=SECRET_KEY)
 if __name__ == "__main__":
 
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)

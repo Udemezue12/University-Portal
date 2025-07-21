@@ -301,7 +301,7 @@ class Student:
             ).first()
 
             if student_result:
-                assignment_score = student_result.    assignment_score
+                assignment_score = student_result.assignment_score
                 exam_score = student_result.exam_score
                 total = student_result.total_score
                 letter_grade = student_result.paper_grade
@@ -325,7 +325,7 @@ class Student:
                 "letter_grade": letter_grade,
             })
 
-        cgpa = round(total_weighted_points / total_units, 2)     if total_units > 0 else 0.0
+        cgpa = round(total_weighted_points / total_units, 2) if total_units > 0 else 0.0
 
         if cgpa >= 4.5:
             class_of_degree = "First Class"
@@ -380,7 +380,7 @@ class Student:
 
         courses = result.scalars().all()
 
-    # Format the response
+ 
         course_list = []
         for course in courses:
             course_list.append({

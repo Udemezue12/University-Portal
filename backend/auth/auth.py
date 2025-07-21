@@ -88,6 +88,10 @@ class Auth:
             secure=True,
             max_age=60 * 60 * 24
         )
+        # request.session["role"] = user.role
+        # request.session["access_token"] = token
+        # response.set_cookie("access_token", token, httponly=True, samesite="Lax", secure=False, max_age=60 * 60 * 24)
+        # response.set_cookie("role", user.role, httponly=True, samesite="Lax", secure=False, max_age=60 * 60 * 24)
         return response
 
 

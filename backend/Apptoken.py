@@ -1,6 +1,4 @@
-
 import secrets
-
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter
@@ -8,9 +6,7 @@ from fastapi import APIRouter
 csrf_router = APIRouter()
 
 
-# @csrf_router.get('/')
-# def index():
-#     return {"message": "Hello World"}
+
 
 
 @csrf_router.get("/csrf_token")

@@ -301,7 +301,7 @@ class EnrollmentRoutes:
 
             return results
 
-    # @admin_router.get("/admin/student/assignments")
+    # @router.get("/admin/student/assignments")
     # def get_all_submitted_assignments(self):
     #     self._check_admin()
     #     assignments = self.db.query(User).filter(

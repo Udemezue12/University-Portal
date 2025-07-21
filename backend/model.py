@@ -70,10 +70,7 @@ class Course(Base):
     syllabus_path = Column(String, nullable=True)
     department_id = department_id = Column(Integer, ForeignKey(
         "departments.id"), nullable=False)
-
     lecturer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    # assignment_id = Column(Integer, ForeignKey(
-    #     "assignment_templates.id"), nullable=False)
     level_id = Column(Integer, ForeignKey("levels.id"))
 
     lecturer = relationship("User", back_populates="courses")
@@ -115,7 +112,6 @@ class AssignmentGrade(Base):
     submission_id = Column(Integer, ForeignKey(
         "assignment_submissions.id"), nullable=False, unique=True)
     score = Column(Float, nullable=False)  
-    # letter_grade = Column(String, nullable=False)  
     feedback = Column(String, nullable=True)
 
     graded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)

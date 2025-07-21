@@ -1,10 +1,7 @@
-from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr, Field
-from pydantic import BaseModel, EmailStr, field_validator, confloat
-from enum import Enum
-from typing import Optional, Dict
 from datetime import datetime, date
+from typing import Optional, List
+from pydantic import BaseModel, EmailStr, Field,  field_validator, confloat
+from enum import Enum
 
 
 class CourseOut(BaseModel):

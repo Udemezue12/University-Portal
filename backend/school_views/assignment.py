@@ -6,10 +6,8 @@ import asyncio
 from notify import manager
 from datetime import datetime
 from constants import get_current_user, save_uploaded_file
-from typing import List
 from model import Level, User, SessionModel,  Course, StudentLevelProgress,  AssignmentGrade, AssignmentSubmission, AssignmentTemplate, Enrollment
 from schema import Role, AssignmentTemplateCreate, SubmittedAssignmentOut, GPAResponse, AssignmentDetailOut, GradeAssignmentDetailOut, StudentResultResponse, StudentResultSchema
-from typing import List
 from model import AssignmentTemplate, Course, Enrollment, AssignmentSubmission, User, StudentLevelProgress, AssignmentGrade, SessionModel, Level
 
 

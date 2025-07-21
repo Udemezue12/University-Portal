@@ -1,11 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Union
-import json
-from fastapi.encoders import jsonable_encoder
 from fastapi_utils.cbv import cbv
-import traceback
 from sqlalchemy.orm import Session, selectinload
 from utils import calculate_paper_grade
 from constants import get_current_user
@@ -192,7 +188,7 @@ class StudentResultRoute:
 
         except Exception as e:
             import traceback
-            print("🔥 ERROR:", str(e))
+            print("ERROR:", str(e))
             traceback.print_exc()
             raise HTTPException(status_code=500,
                                 detail=f"Unexpected error: {str(e)}")
