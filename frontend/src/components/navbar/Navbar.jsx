@@ -1,7 +1,7 @@
 import React from "react";
 import { Navbar, Nav, Container } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
-import { FaKey, FaUserCircle } from "react-icons/fa";
+import { FaKey } from "react-icons/fa";
 import { FiLogOut, FiArrowLeft } from "react-icons/fi";
 import "./Navbar.css";
 import { role } from "../constants/localStorage";

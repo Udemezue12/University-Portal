@@ -13,7 +13,7 @@ const LogoutModal = () => {
 
   const handleClose = () => {
     setShow(false);
-    navigate(-1); // go back silently
+    navigate(-1);
   };
 
   const handleConfirmLogout = async () => {
