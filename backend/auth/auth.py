@@ -73,7 +73,6 @@ class Auth:
         }, SECRET_KEY, algorithm=ALGORITHM)
         response = JSONResponse({
             "username": user.username,
-            "email": user.email,
             "user_id": user.id,
             "role": user.role,
             "message": "Login successful",

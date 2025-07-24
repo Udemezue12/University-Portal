@@ -191,7 +191,6 @@ class PasskeyLoginRouter:
             response = JSONResponse(content={
                 "token": token,
                 "user_id": user.id,
-                "email": user.email,
                 "role": user.role,
                 'username': user.username,
                 'department': department_name.name if department_name else None,
