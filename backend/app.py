@@ -60,12 +60,13 @@ app.add_middleware(
         "https://crm-1uxm.onrender.com",
         "crm-1uxm.onrender.com",
         "wss:crm-1uxm.onrender.com",
-        "university-portal-g6a1x.sevalla.app/",
-        "https://university-portal-g6a1x.sevalla.app/"
+        "university-portal-g6a1x.sevalla.app",
+        "https://university-portal-g6a1x.sevalla.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    
 )
 
 
@@ -124,7 +125,9 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.middleware("http")
 async def add_csp_header(request: Request, call_next):
     response = await call_next(request)
-    response.headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' https://picsum.photos data:;"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; img-src 'self' https://picsum.photos data:;"
+    )
     return response
 app.add_middleware(SecureHeadersMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)

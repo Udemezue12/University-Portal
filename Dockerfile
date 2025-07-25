@@ -63,11 +63,11 @@ COPY backend/alembic ./alembic
 # Copy prebuilt frontend (React) static files
 COPY frontend/build ./frontend/build
 
-# Optional: Expose default port
+# Expose default port
 EXPOSE 8000
 
-# Healthcheck (optional for debugging platform issues)
+# Healthcheck for deployment platforms
 HEALTHCHECK CMD curl --fail http://localhost:${PORT:-8000}/health || exit 1
 
-# Run migrations + start FastAPI server using PORT env var (fallback to 8000 locally)
+# Run DB migrations and start the FastAPI server
 CMD ["/bin/sh", "-c", "alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
