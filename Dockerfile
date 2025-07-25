@@ -41,7 +41,6 @@
 
 # /////FOR SEVALLA/////
 
-# ---------- Backend-only Dockerfile ----------
 FROM python:3.11-slim-bookworm
 
 WORKDIR /app
@@ -58,9 +57,10 @@ COPY backend/ ./backend
 COPY backend/alembic.ini ./alembic.ini
 COPY backend/alembic ./alembic
 
-# Copy prebuilt frontend from local
+# ✅ Copy prebuilt React app
 COPY frontend/build ./frontend/build
 
+# Expose FastAPI port
 EXPOSE 8000
 
 CMD alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port 8000

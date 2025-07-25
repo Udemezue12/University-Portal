@@ -1,37 +1,46 @@
-# Node & Python environment junk
+# === Node & React ===
 node_modules/
 frontend/node_modules/
+frontend/.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Allow prebuilt React build for Docker/Sevalla
+!frontend/build
+!frontend/build/**
+
+# === Python & FastAPI ===
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 *.db
 *.sqlite3
-
-# Build & dist folders
 *.egg-info/
 dist/
 
-# Uncomment these whenever u want to deploy to render 
-# build/
-# frontend/build/
-
-# Env files
+# === Environment Files ===
 .env
 .env.*
 
-# OS system files
+# === Virtual Envs ===
+venv/
+env/
+crm-env/
+payroll-env/
+
+# === System/Editor Junk ===
 .DS_Store
 Thumbs.db
-
-# Logs and temporary files
 *.log
 *.bak
 *.swp
 *.tmp
 *.coverage
 
-# Virtual environments
-venv/
-env/
-crm-env/
+# === IDE/Editor Settings ===
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
