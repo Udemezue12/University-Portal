@@ -60,6 +60,8 @@ app.add_middleware(
         "https://crm-1uxm.onrender.com",
         "crm-1uxm.onrender.com",
         "wss:crm-1uxm.onrender.com",
+        "university-portal-g6a1x.sevalla.app/",
+        "https://university-portal-g6a1x.sevalla.app/"
     ],
     allow_credentials=True,
     allow_methods=["*"],

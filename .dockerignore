@@ -11,8 +11,10 @@ __pycache__/
 # Build & dist folders
 *.egg-info/
 dist/
-build/
-frontend/build/
+
+# Uncomment these whenever u want to deploy to render 
+# build/
+# frontend/build/
 
 # Env files
 .env
