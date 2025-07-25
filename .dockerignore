@@ -6,9 +6,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Allow prebuilt React build for Docker/Sevalla
-!frontend/build
-!frontend/build/**
+# Uncomment for Render
+# frontend/build
+# frontend/build/**
 
 # === Python & FastAPI ===
 __pycache__/

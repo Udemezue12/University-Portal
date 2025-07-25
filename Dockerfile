@@ -41,6 +41,18 @@
 
 # /////FOR SEVALLA/////
 
+# ========== STAGE 1: Build React frontend ==========
+FROM node:18 as frontend-builder
+
+WORKDIR /app/frontend
+
+COPY frontend/package*.json ./
+RUN npm install
+
+COPY frontend/ ./
+RUN npm run build
+
+# ========== STAGE 2: Build FastAPI backend ==========
 FROM python:3.11-slim-bookworm
 
 WORKDIR /app
@@ -57,8 +69,8 @@ COPY backend/ ./backend
 COPY backend/alembic.ini ./alembic.ini
 COPY backend/alembic ./alembic
 
-# ✅ Copy prebuilt React app
-COPY frontend/build ./frontend/build
+# Copy React build from previous stage
+COPY --from=frontend-builder /app/frontend/build ./frontend/build
 
 # Expose FastAPI port
 EXPOSE 8000
