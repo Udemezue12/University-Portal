@@ -27,6 +27,7 @@ mediafiles/
 
 # === Node.js & React ===
 frontend/node_modules/
+frontend/build
 
 
 # React log files
