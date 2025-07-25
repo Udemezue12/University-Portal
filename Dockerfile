@@ -40,26 +40,34 @@
 
 
 # /////FOR SEVALLA/////
-
 FROM python:3.11-slim-bookworm
 
+# Set working directory
 WORKDIR /app
 
+# Set PYTHONPATH so FastAPI can find the backend
 ENV PYTHONPATH="/app/backend"
 
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y build-essential curl && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Backend code
+# Copy backend code
 COPY backend/ ./backend
 COPY backend/alembic.ini ./alembic.ini
 COPY backend/alembic ./alembic
 
-# ✅ Copy prebuilt React app from frontend/build
+# Copy prebuilt frontend (React) static files
 COPY frontend/build ./frontend/build
 
+# Optional: Expose default port
 EXPOSE 8000
 
-CMD alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port 8000
+# Healthcheck (optional for debugging platform issues)
+HEALTHCHECK CMD curl --fail http://localhost:${PORT:-8000}/health || exit 1
+
+# Run migrations + start FastAPI server using PORT env var (fallback to 8000 locally)
+CMD ["/bin/sh", "-c", "alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}"]

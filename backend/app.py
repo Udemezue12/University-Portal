@@ -82,7 +82,9 @@ app.mount(
     StaticFiles(directory=BASE_DIR / "uploads"),
     name="uploads"
 )
-
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 
 
