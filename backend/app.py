@@ -122,13 +122,13 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-@app.middleware("http")
-async def add_csp_header(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; img-src 'self' https://picsum.photos data:;"
-    )
-    return response
+# @app.middleware("http")
+# async def add_csp_header(request: Request, call_next):
+#     response = await call_next(request)
+#     response.headers["Content-Security-Policy"] = (
+#         "default-src 'self'; img-src 'self' https://picsum.photos data:;"
+#     )
+#     return response
 app.add_middleware(SecureHeadersMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 

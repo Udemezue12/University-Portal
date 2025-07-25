@@ -9,7 +9,7 @@ yarn-error.log*
 # Uncomment for Render
 frontend/build
 frontend/build/**
-
+/build
 # === Python & FastAPI ===
 __pycache__/
 *.py[cod]
