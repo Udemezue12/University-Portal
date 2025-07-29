@@ -31,8 +31,8 @@ from validators import SECRET_KEY
 load_dotenv()
 
 app= FastAPI(
-    title="CRM API",
-    description="This is the backend for the CRM system built with FastAPI.",
+    title="UNIVERSITY PORTAL API",
+    description="This is the backend for the University Portal API built with FastAPI.",
     version="1.0.0",
     contact={
         "name": os.getenv('NAME'),
