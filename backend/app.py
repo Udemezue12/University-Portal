@@ -24,12 +24,24 @@ from school_views.assignment import router as assignment_router
 from school_views.ai_routes import openai_router
 from school_views.session_routes import router as session_router
 from school_views.student_routes import router as student_router
-
+from dotenv import load_dotenv
 from notify import manager
 from file_configs import UPLOAD_DIR
 from validators import SECRET_KEY
+load_dotenv()
 
-app = FastAPI()
+app= FastAPI(
+    title="CRM API",
+    description="This is the backend for the CRM system built with FastAPI.",
+    version="1.0.0",
+    contact={
+        "name": os.getenv('NAME'),
+        "url": os.getenv("URL"),
+        "email":os.getenv("EMAIL")
+    },
+   
+   
+)
 BASE_DIR = Path(__file__).resolve().parent
 
 
