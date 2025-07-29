@@ -19,7 +19,7 @@ from database import get_db, get_db_async
 from fastapi_utils.cbv import cbv
 
 from base_code import base64url_encode
-from jose import jwt
+import jwt
 from env_const import RP_ID, jwt_expiration, SECRET_KEY, ALGORITHM
 
 

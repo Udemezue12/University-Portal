@@ -1,4 +1,5 @@
-from jose import jwt, JWTError, ExpiredSignatureError
+# from jose import jwt, JWTError, ExpiredSignatureError
+import jwt
 from fastapi import HTTPException,  Request
 from env_const import SECRET_KEY, ALGORITHM
 
@@ -12,20 +13,24 @@ async def validate_csrf(request: Request):
         raise HTTPException(status_code=403, detail="CSRF token mismatch")
 
 
+
 async def jwt_protect(request: Request):
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
     try:
+        # Decode the token using PyJWT
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         if not user_id:
-            raise HTTPException(
-                status_code=401, detail="Token missing user ID")
+            raise HTTPException(status_code=401, detail="Token missing user ID")
         return user_id
-    except ExpiredSignatureError:
+
+    except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except JWTError:
+
+    except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
@@ -40,9 +45,9 @@ async def passkey_jwt_protect(request: Request) -> int:
             raise HTTPException(
                 status_code=401, detail="Token missing user ID")
         return int(user_id)
-    except ExpiredSignatureError:
+    except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 

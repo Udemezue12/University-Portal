@@ -1,4 +1,4 @@
-from jose import jwt
+import jwt
 from fastapi import Request,  HTTPException
 from sqlalchemy.future import select
 from schema import UserRegisterInput, UserLoginInput
