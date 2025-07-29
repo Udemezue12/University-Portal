@@ -50,8 +50,12 @@ class SecureHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response: Response = await call_next(request)
 
-       
-        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; object-src 'none';"
+        # response.headers["Content-Security-Policy"] = (
+        #     "default-src 'self'; "
+        #     "img-src 'self' https://picsum.photos https://i.picsum.photos; "
+        #     "script-src 'self'; "
+        #     "object-src 'none';"
+        # )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
