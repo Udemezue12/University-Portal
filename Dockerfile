@@ -45,48 +45,49 @@ FROM python:3.11-slim-bookworm
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies and Node.js (for React build)
+# Install system dependencies (build tools, SSL, etc.) for Python & cryptography
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     gnupg \
-    ca-certificates
+    ca-certificates \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 18 (LTS) — change to match your React version
+# Install Node.js 18 LTS (for React frontend build)
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm && \
     node -v && npm -v
 
-# Copy frontend source code and build it
+# Copy and build the React frontend
 COPY frontend/ ./frontend
 WORKDIR /app/frontend
 RUN npm install && npm run build
 
-# Return to base app directory
+# Return to main app directory
 WORKDIR /app
 
 # Set PYTHONPATH so FastAPI can find the backend
 ENV PYTHONPATH="/app/backend"
 
-# Install Python dependencies
+# Copy Python dependency list and install with cryptography backend support
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir "python-jose[cryptography]" && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY backend/ ./backend
 COPY backend/alembic.ini ./alembic.ini
 COPY backend/alembic ./alembic
 
-# Copy prebuilt frontend build output
-# (already built above, so this ensures it's in the right place for the backend)
-# Optionally skip this if backend reads from /app/frontend/build directly
-
-# Expose default port
+# Expose backend port
 EXPOSE 8000
 
 # Healthcheck
 HEALTHCHECK CMD curl --fail http://localhost:${PORT:-8000}/health || exit 1
 
-# Run DB migrations and start FastAPI
+# Start the application
 CMD ["/bin/sh", "-c", "alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
