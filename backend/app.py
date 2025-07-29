@@ -7,7 +7,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from middleware import SecureHeadersMiddleware
+from .middleware import SecureHeadersMiddleware
 from Apptoken import csrf_router
 from passkey_views.passkey_routes import passkey_router
 from auth.auth_routes import auth_router
@@ -25,9 +25,9 @@ from school_views.ai_routes import openai_router
 from school_views.session_routes import router as session_router
 from school_views.student_routes import router as student_router
 
-from notify import manager
-from file_configs import UPLOAD_DIR
-from validators import SECRET_KEY
+from .notify import manager
+from .file_configs import UPLOAD_DIR
+from .validators import SECRET_KEY
 
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
