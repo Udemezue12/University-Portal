@@ -40,54 +40,65 @@
 
 
 # /////FOR SEVALLA/////
+# Use slim Python base image
 FROM python:3.11-slim-bookworm
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies and Node.js (for React build)
+# Install system and build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
+    gcc \
+    g++ \
+    libffi-dev \
+    libpq-dev \
+    libssl-dev \
+    python3-dev \
     curl \
     gnupg \
-    ca-certificates
+    ca-certificates \
+    && apt-get clean
 
-# Install Node.js 18 (LTS) — change to match your React version
+# Upgrade pip and install Python build tools
+RUN pip install --upgrade pip setuptools wheel build
+
+# ---- FRONTEND BUILD ----
+
+# Copy frontend code and build it
+COPY frontend/ ./frontend
+WORKDIR /app/frontend
+
+# Install Node.js 18 and build React frontend
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm && \
-    node -v && npm -v
+    npm install && npm run build
 
-# Copy frontend source code and build it
-COPY frontend/ ./frontend
-WORKDIR /app/frontend
-RUN npm install && npm run build
-
-# Return to base app directory
+# Return to base directory
 WORKDIR /app
 
-# Set PYTHONPATH so FastAPI can find the backend
+# ---- BACKEND SETUP ----
+
+# Set Python path so FastAPI can find the backend
 ENV PYTHONPATH="/app/backend"
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt || cat requirements.txt
-
-
-# Copy backend code
+# Copy backend code (before installing requirements in case of local packages)
 COPY backend/ ./backend
 COPY backend/alembic.ini ./alembic.ini
 COPY backend/alembic ./alembic
 
-# Copy prebuilt frontend build output
-# (already built above, so this ensures it's in the right place for the backend)
-# Optionally skip this if backend reads from /app/frontend/build directly
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose default port
+# ---- FINAL CONFIG ----
+
+# Expose backend port
 EXPOSE 8000
 
-# Healthcheck
+# Healthcheck endpoint (optional)
 HEALTHCHECK CMD curl --fail http://localhost:${PORT:-8000}/health || exit 1
 
-# Run DB migrations and start FastAPI
-CMD alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port 8000
+# Run Alembic DB migrations and start FastAPI app
+CMD ["sh", "-c", "alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
