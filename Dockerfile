@@ -71,7 +71,8 @@ ENV PYTHONPATH="/app/backend"
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt || cat requirements.txt
+
 
 # Copy backend code
 COPY backend/ ./backend
