@@ -45,49 +45,49 @@ FROM python:3.11-slim-bookworm
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies (build tools, SSL, etc.) for Python & cryptography
+# Install system dependencies for node, cryptography, pip builds
 RUN apt-get update && apt-get install -y \
     build-essential \
-    curl \
-    gnupg \
-    ca-certificates \
     libssl-dev \
     libffi-dev \
     python3-dev \
+    curl \
+    gnupg \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 18 LTS (for React frontend build)
+# Install Node.js 18 (LTS)
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm && \
     node -v && npm -v
 
-# Copy and build the React frontend
+# Copy frontend code and build
 COPY frontend/ ./frontend
 WORKDIR /app/frontend
 RUN npm install && npm run build
 
-# Return to main app directory
+# Return to app base dir
 WORKDIR /app
 
-# Set PYTHONPATH so FastAPI can find the backend
+# Set PYTHONPATH for FastAPI
 ENV PYTHONPATH="/app/backend"
 
-# Copy Python dependency list and install with cryptography backend support
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir "python-jose[cryptography]" && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY backend/ ./backend
 COPY backend/alembic.ini ./alembic.ini
 COPY backend/alembic ./alembic
 
-# Expose backend port
+# Expose FastAPI port
 EXPOSE 8000
 
 # Healthcheck
 HEALTHCHECK CMD curl --fail http://localhost:${PORT:-8000}/health || exit 1
 
-# Start the application
+# Run migrations and start FastAPI
 CMD ["/bin/sh", "-c", "alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
