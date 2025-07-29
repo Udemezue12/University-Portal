@@ -57,7 +57,7 @@ FROM python:3.11-slim-bookworm AS final
 # Environment Setup
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/backend  # So "from passkey_views..." works
+    PYTHONPATH=/app/backend 
 
 # Create work directory
 WORKDIR /app
