@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from .middleware import SecureHeadersMiddleware
-from Apptoken import csrf_router
+from .Apptoken import csrf_router
 from passkey_views.passkey_routes import passkey_router
 from auth.auth_routes import auth_router
 from school_views.course_routes import router as course_router
