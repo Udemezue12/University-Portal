@@ -41,30 +41,52 @@
 
 # /////FOR SEVALLA/////
 # ---- Base Python Image ----
+# ---------------------------
+# Base image
+# ---------------------------
 FROM python:3.11-slim
 
-# ---- Set working directory ----
+# ---------------------------
+# Environment Setup
+# ---------------------------
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# ---------------------------
+# Create work directory
+# ---------------------------
 WORKDIR /app
 
-# ---- Install system dependencies ----
+# ---------------------------
+# Install system dependencies
+# ---------------------------
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
     gcc \
+    libpq-dev \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# ---- Install Python dependencies ----
+# ---------------------------
+# Install Python dependencies
+# ---------------------------
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# ---- Copy application source code ----
+# ---------------------------
+# Copy project files
+# ---------------------------
 COPY backend ./backend
 
+# ---------------------------
+# Auto-generate RSA key pair
+# ---------------------------
+RUN mkdir -p /app/backend/keys && \
+    openssl genrsa -out /app/backend/keys/private.pem 2048 && \
+    openssl rsa -in /app/backend/keys/private.pem -pubout -out /app/backend/keys/public.pem
 
-COPY backend/keys ./backend/keys
-
-# ---- Expose the port FastAPI will run on ----
+# ---------------------------
+# Expose port & run
+# ---------------------------
 EXPOSE 8000
 
-# ---- Run the application ----
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
