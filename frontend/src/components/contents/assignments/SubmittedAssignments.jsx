@@ -75,7 +75,7 @@ export default function SubmittedAssignments() {
                       <>
                         <strong>File:</strong>{" "}
                         <a
-                          href={`http://localhost:8000${s.submission_path}`}
+                          href={`${API_URL}${s.submission_path}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           download
@@ -87,7 +87,7 @@ export default function SubmittedAssignments() {
                           overlay={<Tooltip>Download File</Tooltip>}
                         >
                           <a
-                            href={`http://localhost:8000${s.submission_path}`}
+                            href={`${API_URL}${s.submission_path}`}
                             download
                             className="text-decoration-none"
                           >

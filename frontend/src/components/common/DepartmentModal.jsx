@@ -1,8 +1,15 @@
 import React from "react";
 import { Modal } from "react-bootstrap";
 import ButtonComponent from "./ButtonComponent";
+import { handleAutoLogout } from "./../auth/handleLogout";
+import { useNavigate } from "react-router-dom";
 
-const DepartmentCheckModal = ({ show, onContinue, onLogout }) => {
+const DepartmentCheckModal = ({ show, onContinue }) => {
+  const navigate = useNavigate();
+  const onLogout = () => {
+    handleAutoLogout(navigate);
+  };
+
   return (
     <Modal show={show} backdrop="static" keyboard={false} centered>
       <Modal.Header>

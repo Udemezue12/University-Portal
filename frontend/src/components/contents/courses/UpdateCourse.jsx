@@ -111,7 +111,7 @@ export default function UpdateCourse() {
     try {
       const csrf_token = await fetchFastCsrfToken();
       const res = await axios.put(
-        `http://localhost:8000/courses/${courseId}`,
+        `${API_URL}/courses/${courseId}`,
         data,
         {
           headers: {

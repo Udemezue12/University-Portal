@@ -54,7 +54,7 @@ useEffect(() => {
               <td>{item.text_submission || "N/A"}</td>
               <td>
                 {item.submission_path ? (
-                  <a href={`http://localhost:8000/${item.submission_path}`} target="_blank" rel="noreferrer">View File</a>
+                  <a href={`${API_URL}/${item.submission_path}`} target="_blank" rel="noreferrer">View File</a>
                 ) : (
                   "N/A"
                 )}
