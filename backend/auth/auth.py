@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import JSONResponse
 from model import User, StudentDepartment, LecturerDepartmentAndLevel, Department
 from env_const import SECRET_KEY, ALGORITHM, jwt_expiration
-from key_configs import PRIVATE_KEY, R_ALGORITHM
+# from key_configs import PRIVATE_KEY, R_ALGORITHM
 
 class Auth:
     def __init__(self, db: AsyncSession):
@@ -70,7 +70,7 @@ class Auth:
         token = jwt.encode({
             "sub": str(user.id),
             "exp": jwt_expiration
-        }, PRIVATE_KEY, algorithm=R_ALGORITHM)
+        }, SECRET_KEY, algorithm=ALGORITHM)
         response = JSONResponse({
             "username": user.username,
             "user_id": user.id,
