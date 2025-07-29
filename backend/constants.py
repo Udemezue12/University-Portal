@@ -1,7 +1,7 @@
 import aiofiles
 import os
 import shutil
-from configs import UPLOAD_DIR
+from file_configs import UPLOAD_DIR
 from fastapi import UploadFile, HTTPException, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select

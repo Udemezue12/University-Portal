@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from configs import convert_to_url
+from file_configs import convert_to_url
 from database import get_db, get_db_async
 from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi_utils.cbv import cbv

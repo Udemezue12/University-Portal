@@ -21,8 +21,7 @@ from fastapi_utils.cbv import cbv
 from base_code import base64url_encode
 import jwt
 from env_const import RP_ID, jwt_expiration, SECRET_KEY, ALGORITHM
-
-
+from key_configs import PRIVATE_KEY, R_ALGORITHM
 passkey_router = APIRouter()
 
 
@@ -185,7 +184,7 @@ class PasskeyLoginRouter:
 
             token = jwt.encode(
                 {"sub": str(user.id), "exp": jwt_expiration},
-                SECRET_KEY, algorithm=ALGORITHM
+                PRIVATE_KEY,  algorithm=R_ALGORITHM
             )
 
             response = JSONResponse(content={

@@ -2,6 +2,7 @@
 import jwt
 from fastapi import HTTPException,  Request
 from env_const import SECRET_KEY, ALGORITHM
+from key_configs import PUBLIC_KEY, R_ALGORITHM
 
 
 async def validate_csrf(request: Request):
@@ -20,8 +21,8 @@ async def jwt_protect(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     try:
-        # Decode the token using PyJWT
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        
+        payload = jwt.decode(token, PUBLIC_KEY,  algorithms=[R_ALGORITHM])
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Token missing user ID")

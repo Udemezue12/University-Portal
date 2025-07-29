@@ -3,7 +3,7 @@ import uvicorn
 from pathlib import Path
 from passlib.context import CryptContext
 from starlette.middleware.sessions import SessionMiddleware
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect,Request
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -26,7 +26,7 @@ from school_views.session_routes import router as session_router
 from school_views.student_routes import router as student_router
 
 from notify import manager
-from configs import UPLOAD_DIR
+from file_configs import UPLOAD_DIR
 from validators import SECRET_KEY
 
 app = FastAPI()
@@ -66,7 +66,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    
+
 )
 
 
@@ -83,10 +83,11 @@ app.mount(
     StaticFiles(directory=BASE_DIR / "uploads"),
     name="uploads"
 )
+
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
-
 
 
 @app.on_event("startup")
@@ -95,8 +96,6 @@ def create_upload_folder():
         os.makedirs(UPLOAD_DIR, exist_ok=True)
     except Exception as e:
         print(f"Upload folder creation failed: {e}")
-
-
 
 
 @app.get("/")
@@ -110,8 +109,6 @@ async def catch_all(full_path: str):
     if potential_file.exists() and potential_file.is_file():
         return FileResponse(potential_file)
     return FileResponse(BASE_DIR.parent / "frontend" / "build" / "index.html")
-
-
 
 
 @app.websocket("/ws/notifications")
