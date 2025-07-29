@@ -90,4 +90,4 @@ EXPOSE 8000
 HEALTHCHECK CMD curl --fail http://localhost:${PORT:-8000}/health || exit 1
 
 # Run DB migrations and start FastAPI
-CMD ["/bin/sh", "-c", "alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port 8000
