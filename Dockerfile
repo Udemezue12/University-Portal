@@ -88,8 +88,8 @@ RUN mkdir -p /app/backend/keys && \
 # Copy built frontend into backend for FastAPI to serve
 COPY --from=frontend-builder /app/frontend/build ./frontend/build
 
-# Expose the FastAPI port
+
 EXPOSE 8000
 
-# Run Alembic + start app
+
 CMD alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port 8000
