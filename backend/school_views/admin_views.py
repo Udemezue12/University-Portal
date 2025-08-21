@@ -1,12 +1,20 @@
-from fastapi import APIRouter, Depends,HTTPException
-from fastapi_utils.cbv import cbv
-from sqlalchemy.orm import Session, joinedload
-from database import get_db
 from constants import get_current_user
-from model import User, Role, Department, StudentLevelProgress,LecturerDepartmentAndLevel
+from database import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi_utils.cbv import cbv
+from model import (
+    Department,
+    LecturerDepartmentAndLevel,
+    Role,
+    StudentLevelProgress,
+    User,
+)
 from schema import AdminLecturerOut
+from sqlalchemy.orm import Session
 
 admin_router = APIRouter(prefix="/admin", tags=["Admin"])
+
+
 @cbv(admin_router)
 class AdminRouter:
     db: Session = Depends(get_db)
@@ -14,9 +22,9 @@ class AdminRouter:
 
     def _check_admin(self):
         if self.current_user.role != Role.ADMIN:
-            raise HTTPException(
-                status_code=403, detail="Admin access required.")
-    @admin_router.get("/lecturers", response_model=list    [AdminLecturerOut])
+            raise HTTPException(status_code=403, detail="Admin access required.")
+
+    @admin_router.get("/lecturers", response_model=list[AdminLecturerOut])
     def get_all_lecturers(self):
         self._check_admin()
         db = self.db
@@ -31,29 +39,32 @@ class AdminRouter:
         result = []
 
         for dept in departments:
-            dept_obj = {
-                "department_name": dept.name,
-                "levels": []
-            }
+            dept_obj = {"department_name": dept.name, "levels": []}
             for level in dept.levels:
-                students_progress = db.query    (StudentLevelProgress).filter    (StudentLevelProgress.level_id == level.id).all    ()
+                students_progress = (
+                    db.query(StudentLevelProgress)
+                    .filter(StudentLevelProgress.level_id == level.id)
+                    .all()
+                )
                 students_list = []
                 for progress in students_progress:
-                    student = db.query(User).filter(User.id ==     progress.student_id).first()
-                    students_list.append({
-                        "id": student.id,
-                        "name": student.name,
-                        "email": student.email,
-                        "level": level.name,
-                        "department": dept.name,
-                    })
-                dept_obj["levels"].append({
-                    "level_name": level.name,
-                    "students": students_list
-                })
+                    student = (
+                        db.query(User).filter(User.id == progress.student_id).first()
+                    )
+                    students_list.append(
+                        {
+                            "id": student.id,
+                            "name": student.name,
+                            "email": student.email,
+                            "level": level.name,
+                            "department": dept.name,
+                        }
+                    )
+                dept_obj["levels"].append(
+                    {"level_name": level.name, "students": students_list}
+                )
             result.append(dept_obj)
         return result
-   
 
     @admin_router.get("/lecturers-by-departments-levels")
     def get_lecturers_by_departments_levels(self):
@@ -63,27 +74,30 @@ class AdminRouter:
         result = []
 
         for dept in departments:
-            dept_obj = {
-                "department_name": dept.name,
-            "levels": []
-            }
+            dept_obj = {"department_name": dept.name, "levels": []}
             for level in dept.levels:
-                lecturers_in_level = db.query(User).join(User.    assigned_departments).filter(
-                    LecturerDepartmentAndLevel.department_id     == dept.id,
-                    LecturerDepartmentAndLevel.level_id ==     level.id
-                ).all()
-                lecturers_list = [{
-                    "id": lecturer.id,
-                    "name": lecturer.name,
-                    "email": lecturer.email,
-                } for lecturer in lecturers_in_level]
+                lecturers_in_level = (
+                    db.query(User)
+                    .join(User.assigned_departments)
+                    .filter(
+                        LecturerDepartmentAndLevel.department_id == dept.id,
+                        LecturerDepartmentAndLevel.level_id == level.id,
+                    )
+                    .all()
+                )
+                lecturers_list = [
+                    {
+                        "id": lecturer.id,
+                        "name": lecturer.name,
+                        "email": lecturer.email,
+                    }
+                    for lecturer in lecturers_in_level
+                ]
 
                 if lecturers_list:
-                    dept_obj["levels"].append({
-                        "level_name": level.name,
-                        "lecturers": lecturers_list
-                    })
+                    dept_obj["levels"].append(
+                        {"level_name": level.name, "lecturers": lecturers_list}
+                    )
             if dept_obj["levels"]:
                 result.append(dept_obj)
         return result
-    

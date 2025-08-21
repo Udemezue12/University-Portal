@@ -1,7 +1,8 @@
-from datetime import datetime, date
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr, Field,  field_validator, confloat
+from datetime import date, datetime
 from enum import Enum
+from typing import List, Optional
+
+from pydantic import BaseModel, EmailStr, Field, confloat, field_validator
 
 
 class CourseOut(BaseModel):
@@ -17,9 +18,9 @@ class CourseOut(BaseModel):
 
 
 class Role(str, Enum):
-    STUDENT = 'student'
-    LECTURER = 'lecturer'
-    ADMIN = 'admin'
+    STUDENT = "student"
+    LECTURER = "lecturer"
+    ADMIN = "admin"
 
 
 class UserBase(BaseModel):
@@ -73,10 +74,10 @@ class CourseBase(BaseModel):
     description: Optional[str] = None
     syllabus_path: Optional[str] = None
 
-    @field_validator('syllabus_path')
+    @field_validator("syllabus_path")
     def validate_syllabus_extension(cls, v):
-        if v and not v.lower().endswith(('.pdf', '.docx')):
-            raise ValueError('Syllabus must be a PDF or DOCX file')
+        if v and not v.lower().endswith((".pdf", ".docx")):
+            raise ValueError("Syllabus must be a PDF or DOCX file")
         return v
 
 
@@ -167,6 +168,7 @@ class ApproveEnrollmentResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # class LecturerInfo(BaseModel):
 #     id: int
 #     name: str
@@ -217,10 +219,10 @@ class AssignmentBase(BaseModel):
     grade: Optional[confloat(ge=0, le=100)] = None
     weight: confloat(ge=0, le=1) = 1.0
 
-    @field_validator('submission_path')
+    @field_validator("submission_path")
     def validate_submission_extension(cls, v):
-        if v and not v.lower().endswith(('.pdf', '.docx')):
-            raise ValueError('Submission must be a PDF or DOCX file')
+        if v and not v.lower().endswith((".pdf", ".docx")):
+            raise ValueError("Submission must be a PDF or DOCX file")
         return v
 
 
@@ -364,6 +366,7 @@ class LecturerInfo(BaseModel):
 #     class Config:
 #         form_atrributes = True
 
+
 class CourseInfo(BaseModel):
     id: int
     title: str
@@ -380,11 +383,12 @@ class CourseInfo(BaseModel):
             description=obj.description,
             grade_point=obj.grade_point,
             lecturer_name=obj.lecturer.name if obj.lecturer else "N/A",
-            department_name=obj.department.name if obj.department else "N/A"
+            department_name=obj.department.name if obj.department else "N/A",
         )
 
     class Config:
         from_attributes = True
+
 
 # class CourseInfo(BaseModel):
 # #     id: int
@@ -546,12 +550,12 @@ class CredentialAttestation(BaseModel):
     public_key: str
     device_fingerprint: str
 
+
 # class StartLoginRequest(BaseModel):
 #     username: str
 
 
 class VerifyLoginRequest(BaseModel):
-
     credential_id: str
 
 
@@ -602,6 +606,8 @@ class DepartmentWithLevelsStudents(BaseModel):
 
     class Config:
         from_attributes = True
+
+
 # .//////////////////////////////
 
 

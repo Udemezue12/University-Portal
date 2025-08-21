@@ -1,6 +1,3 @@
-
-
-
 # from logging.config import fileConfig
 # from sqlalchemy import engine_from_config, pool
 # from alembic import context
@@ -22,30 +19,32 @@
 # with connectable.connect() as connection:
 #     context.configure(
 #         connection=connection,
-#         target_metadata=Base.metadata  
+#         target_metadata=Base.metadata
 #     )
 
 #     with context.begin_transaction():
 #         context.run_migrations()
 
-# 
+#
 import os
 import sys
 from logging.config import fileConfig
-from sqlalchemy import pool
+
 from alembic import context
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend"))
+)
 
-from database import SyncEngine, Base
-from model import *  
+from database import Base, SyncEngine
 
 config = context.config
 fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", "sqlite:///./crm.db")  # Or use env variable
+config.set_main_option("sqlalchemy.url", "sqlite:///./crm.db")
 
 target_metadata = Base.metadata
+
 
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
@@ -58,12 +57,14 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+
 def run_migrations_online():
-    connectable = SyncEngine 
+    connectable = SyncEngine
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
+
 
 # Step 7: Decide offline vs online
 if context.is_offline_mode():

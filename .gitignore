@@ -1,6 +1,6 @@
 .qodo
 .vscode
-
+.ruff_cache
 
 # Virtual Environment
 env/

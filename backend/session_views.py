@@ -9,7 +9,7 @@
 
 
 # def require_user_session(request: Request):
-   
+
 
 #     role = request.session.get('role') or request.cookies.get("role")
 #     token = request.session.get(
@@ -27,7 +27,7 @@
 #         logger.info(f"Access token detected for user {role}")
 
 #     return {
-       
+
 #         "role": role,
 #         "access_token": token
 #     }

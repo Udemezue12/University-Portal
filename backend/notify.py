@@ -1,6 +1,6 @@
-from fastapi import WebSocket
-from typing import  Dict, List
+from typing import Dict, List
 
+from fastapi import WebSocket
 
 
 class ConnectionManager:
@@ -10,7 +10,9 @@ class ConnectionManager:
         self.user_roles: Dict[int, str] = {}
         self.user_departments: Dict[int, List[int]] = {}
 
-    async def connect(self, websocket: WebSocket, user_id: int, role: str, departments: List[int]):
+    async def connect(
+        self, websocket: WebSocket, user_id: int, role: str, departments: List[int]
+    ):
         await websocket.accept()
         self.active_connections.append(websocket)
         self.user_connections[user_id] = websocket
@@ -35,10 +37,8 @@ class ConnectionManager:
             if department_id in user_depts:
                 try:
                     await websocket.send_json(message)
-                except:
+                except Exception:
                     continue
-
-
 
 
 manager = ConnectionManager()

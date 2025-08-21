@@ -1,12 +1,4 @@
-from dotenv import load_dotenv
-from pathlib import Path
-import os
-
-
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-
 
 
 # PRIVATE_KEY_PATH = os.path.join(BASE_DIR, os.getenv("PRIVATE_KEY_PATH"))
@@ -26,7 +18,6 @@ import os
 
 # with open(PUBLIC_KEY_PATH, "r") as f:
 #     PUBLIC_KEY = f.read()
-
 
 
 # R_ALGORITHM = "RS256"

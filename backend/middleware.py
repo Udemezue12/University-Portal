@@ -1,7 +1,7 @@
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import ASGIApp, Receive, Scope, Send
 # from starlette.responses import Response
-from fastapi import Request, Response, HTTPException
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+
 # from datetime import datetime, timedelta
 
 
@@ -44,6 +44,7 @@ from fastapi import Request, Response, HTTPException
 #             httponly=True,
 #             samesite="Lax"
 #         )
+
 
 #         return response
 class SecureHeadersMiddleware(BaseHTTPMiddleware):
