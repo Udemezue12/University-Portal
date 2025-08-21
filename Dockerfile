@@ -35,7 +35,7 @@ COPY --from=frontend-builder /app/frontend/build ./frontend/build
 # Expose app port
 EXPOSE 8000
 
-
+# Run CMD   
 CMD alembic upgrade head && uvicorn backend.app:app --host 0.0.0.0 --port 8000
 
 
